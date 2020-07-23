@@ -1,0 +1,334 @@
+---------------------------------------------------------------------------------
+-- Univ. of Chicago HEP / electronics design group
+--    -- + KICP 2015 --
+--
+-- PROJECT:      ACC
+-- FILE:         dataHandler.vhd
+-- AUTHOR:       D. Greenshields
+-- DATE:         June 2020
+--
+-- DESCRIPTION:  a state machine to get the data from the rx buffers and also local 
+-- 				  data sent across the usb link in a timely and orderly fashion
+--			        it is initiated automatically when the rx buffers become full
+--				     but can be invoked manually aswell
+--	       	     readMode determines what data is sent
+---------------------------------------------------------------------------------
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+USE ieee.numeric_std.ALL; 
+use work.defs.all;
+
+
+
+entity dataHandler is
+	port (
+		reset						: 	in   	std_logic;
+		clock				      : 	in		std_logic;        
+		info						:  in 	info_type;
+      
+      -- rx buffer ram signals
+      ramReadEnable        : 	out 	std_logic_vector(7 downto 0);
+      ramAddress           :  out   std_logic_vector(transceiver_mem_depth-1 downto 0);
+      ramData              :  in    rx_ram_data_type;
+      rxDataLen				:  in  	naturalArray_16bit;
+		bufferReadoutDone    :  out   std_logic_vector(7 downto 0);
+      
+      -- usb tx signals
+      dout 		            : 	out	std_logic_vector(15 downto 0);
+		dout_valid			   : 	out	std_logic;
+      txAck                : 	in 	std_logic; -- a pulse input which shows that the data was sent to the usb chip
+      txReady              : 	in 	std_logic; -- usb tx is ready for valid data
+      txLockReq            : 	out	std_logic;
+      txLockAck            : 	in  	std_logic;
+      
+      -- data
+      localInfo_readRequest: in std_logic;      
+      ramData_readRequest	: in std_logic;      
+      linkStatusOk         : in std_logic_vector(7 downto 0);    
+      trigInfo             : in std_logic_vector(2 downto 0);    
+      rxPacketStarted      : in std_logic_vector(7 downto 0);    
+      rxPacketReceived     : in std_logic_vector(7 downto 0);
+
+      -- error
+      timeoutError  			:	out	std_logic);
+end dataHandler;
+
+
+architecture vhdl of dataHandler is
+
+
+
+type state_type is (
+   CHECK_IF_SEND_DATA,
+   BUS_REQUEST,
+   DATA_SEND,
+   DATA_ACK,
+   DONE);
+   
+   
+
+
+-- local data frame
+constant localData_frameLen: natural := 32;
+
+
+-- ram data frame
+constant rxData_headerLen: natural := 7;
+constant rxData_frameLen: natural := 8001;
+   
+   
+   
+
+
+signal localData:  frameData_type;
+signal rxData_header:  frameData_type;
+signal rxData_frameEnd:  frameData_type;
+signal address: natural;
+signal txAck_z: std_logic;
+   
+	
+	begin	
+	
+
+               
+ramAddress <= std_logic_vector(to_unsigned(address,15));
+
+
+
+-- notes
+--
+-- The handshaking between this module and usb tx is quite important because
+-- usb tx internally uses a different clock which is unsynchronized, 
+-- even the I/O are on the system clock. 
+--
+-- This means that you don't know exactly how many clock cycles the tx acknowledgement
+-- will take to come back, or which clock cycle it will begin.
+--
+-- The important thing is that you don't put valid data in while the tx ack from 
+-- the previous data is still there, thus giving a false ack.
+--
+-- It was decided to detect a rising edge on tx ack so that you definitely know it has gone low
+-- previously. 
+
+
+
+
+
+
+
+   
+   
+DATA_HANDLER: process(clock)
+variable getRamData: boolean;
+variable getLocalData: boolean;
+variable ch: natural range 0 to 7;				-- the psec channel number (0 to 4)
+variable psecDone: boolean;		-- all the psec data stored in ram has been transmitted
+variable state: state_type;
+variable t: natural; -- timeout value 
+variable i: natural range 0 to 255;  -- the index of the current data word within the section
+variable frameLen: natural;
+variable rdMode: natural; -- an integer version of the 3 bit slv 'readMode'
+
+
+begin
+	if (rising_edge(clock)) then
+	
+		if (reset = '1') then
+			
+			state := CHECK_IF_SEND_DATA;
+         
+			
+		else
+		
+		        
+         
+         
+         
+         case state is
+         
+         
+         
+				when CHECK_IF_SEND_DATA => -- check for rx buffer full, or request to send local info
+			             
+               
+               
+					if (localInfo_readRequest = '1') then 
+						frameLen := localData_frameLen;
+						getLocalData := true; 
+						i := 0;
+						t := 0;
+						address <= 0;
+						timeoutError <= '0';
+						state := BUS_REQUEST;
+					end if;
+               
+			   
+            when BUS_REQUEST =>               
+               txLockReq <= '1';  -- request locking the usb bus in tx mode
+               if (txLockAck = '1') then state := DATA_SEND; end if;  -- usb bus acknowledge, bus is now locked for tx use
+               
+               
+
+            when DATA_SEND =>
+               -- choose the correct data 
+               if (txReady = '1') then
+                  
+						
+						if (not SOF_done) then		-- start of frame
+							dout <= STARTWORD; 
+							i := i + 1;
+							if (i >= 2) then
+								i := 0;
+								SOF_done := true;
+							end if;
+                  
+						
+						elsif (channelsDone < 4) then
+							
+							if (not preambleDone) then		-- preamble
+								dout <= x"F005";
+								i := 0;
+								preambleDone := true;
+							
+							elsif (not psecDataDone) then
+								dout <= ramReadData(ch);
+								readAddress <= readAddresss + 1;
+								i := i + 1;
+								if (i >= 1536) then			-- 256 words x 6 channels
+									psecDataDone := true;
+									i := 0;
+								end if;
+								
+							else							-- postamble
+								if (i < 2) then
+									dout <= "BA11";
+									i := i + 1;									
+								elsif (i < 15) then
+									dout <= info(i - 2);
+									i := i + 1;
+								else
+									dout <= PSEC_END_WORD;
+									i := 0;
+									channelDone := channelsDone + 1;		-- finished the current channel
+									preambleDone := false;
+									psecDataDone := false;
+								end if;
+									
+							end if;
+							
+						elsif (not trigDone) then		-- trigger
+						
+							dout <= selfTrigRateCount(i);
+							i := i + 1;
+							if (i = 30) then
+								i := 0;
+								trigDone := true;
+							end if;
+						
+						else
+						
+							dout <= ENDWORD;
+							i := i + 1;
+							if (i >= 3) then
+								done := true;
+							end if;						
+
+                  end if;
+						
+						
+                  dout_valid <= '1';   -- initiate the usb tx process
+                  t := 40000000;  -- set timeout delay 1s for data acknowledge
+                  state := DATA_ACK;
+               
+					end if;		-- if 'tx ready'
+               
+                  
+                  
+            when DATA_ACK =>
+               dout_valid <= '0';
+               if (txAck_z = '0' and txAck = '1') then  -- rising edge detect means the new data was acked
+                  t := 0; -- clear timeout
+                  if (i = frameLen) then
+                     state := DONE;
+                  else
+                     state := DATA_SEND;
+                  end if;
+               end if;
+               
+ 
+
+ 
+            when DONE => 
+               txLockReq <= '0';    -- this going low causes the packet end signal to be sent and gives chance for the read module to operate if necessary
+               if (txLockAck = '0') then                
+                  if (getRamData) then bufferReadoutDone(ch) <= '1'; end if; -- flag that the buffer was read. This is used to reset the corresponding buffer write process
+                  state := CHECK_IF_SEND_DATA;
+               end if;
+               
+               
+               
+         end case;
+         
+         
+         
+         
+         -- timeout error
+         
+         if (t > 0) then
+            t := t - 1;
+            if (t = 0) then 
+               timeoutError <= '1';   -- generate an output pulse to indicate the error
+               state := DONE; 
+            end if;     
+         else
+            timeoutError <= '0';
+         end if;
+         
+         
+         
+         
+      end if;
+      
+   end if;
+   
+   
+end process;
+               
+               
+               
+    
+    
+		
+end vhdl;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

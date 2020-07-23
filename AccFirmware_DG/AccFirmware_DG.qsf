@@ -1,0 +1,851 @@
+# -------------------------------------------------------------------------- #
+#
+# Copyright (C) 2018  Intel Corporation. All rights reserved.
+# Your use of Intel Corporation's design tools, logic functions 
+# and other software and tools, and its AMPP partner logic 
+# functions, and any output files from any of the foregoing 
+# (including device programming or simulation files), and any 
+# associated documentation or information are expressly subject 
+# to the terms and conditions of the Intel Program License 
+# Subscription Agreement, the Intel Quartus Prime License Agreement,
+# the Intel FPGA IP License Agreement, or other applicable license
+# agreement, including, without limitation, that your use is for
+# the sole purpose of programming logic devices manufactured by
+# Intel and sold by Intel or its authorized distributors.  Please
+# refer to the applicable agreement for further details.
+#
+# -------------------------------------------------------------------------- #
+#
+# Quartus Prime
+# Version 18.1.0 Build 625 09/12/2018 SJ Standard Edition
+# Date created = 11:40:21  June 03, 2020
+#
+# -------------------------------------------------------------------------- #
+#
+# Notes:
+#
+# 1) The default values for assignments are stored in the file:
+#		AccFirmware_DG_assignment_defaults.qdf
+#    If this file doesn't exist, see file:
+#		assignment_defaults.qdf
+#
+# 2) Altera recommends that you do not modify this file. This
+#    file is updated automatically by the Quartus Prime software
+#    and any changes you make may be lost or overwritten.
+#
+# -------------------------------------------------------------------------- #
+
+
+set_global_assignment -name FAMILY "Arria V"
+set_global_assignment -name DEVICE 5AGXFB5H4F35C4
+set_global_assignment -name TOP_LEVEL_ENTITY ACC_main
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION 18.1.0
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "11:40:20  JUNE 03, 2020"
+set_global_assignment -name LAST_QUARTUS_VERSION "18.1.0 Standard Edition"
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 256
+set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
+set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
+set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+set_location_assignment PIN_C1 -to clockIn[0]
+set_location_assignment PIN_C2 -to "clockIn[0](n)"
+set_location_assignment PIN_AJ28 -to clockIn[1]
+set_location_assignment PIN_AH28 -to "clockIn[1](n)"
+set_location_assignment PIN_G29 -to clockIn[2]
+set_location_assignment PIN_H29 -to "clockIn[2](n)"
+set_location_assignment PIN_AJ7 -to clockIn[3]
+set_location_assignment PIN_AH7 -to "clockIn[3](n)"
+set_location_assignment PIN_C14 -to led[0]
+set_location_assignment PIN_E14 -to led[1]
+set_location_assignment PIN_D14 -to led[2]
+set_location_assignment PIN_E15 -to clockSwCtrl
+set_location_assignment PIN_AG23 -to LVDS_In[0][0]
+set_location_assignment PIN_AF23 -to "LVDS_In[0][0](n)"
+set_location_assignment PIN_AH20 -to LVDS_In[0][1]
+set_location_assignment PIN_AG20 -to "LVDS_In[0][1](n)"
+set_location_assignment PIN_AN21 -to LVDS_In[0][2]
+set_location_assignment PIN_AM22 -to "LVDS_In[0][2](n)"
+set_location_assignment PIN_AN24 -to LVDS_In[0][3]
+set_location_assignment PIN_AN23 -to "LVDS_In[0][3](n)"
+set_location_assignment PIN_AH25 -to LVDS_In[1][0]
+set_location_assignment PIN_AH24 -to "LVDS_In[1][0](n)"
+set_location_assignment PIN_AL22 -to LVDS_In[1][1]
+set_location_assignment PIN_AL21 -to "LVDS_In[1][1](n)"
+set_location_assignment PIN_AK21 -to LVDS_In[1][2]
+set_location_assignment PIN_AJ22 -to "LVDS_In[1][2](n)"
+set_location_assignment PIN_AM20 -to LVDS_In[1][3]
+set_location_assignment PIN_AL20 -to "LVDS_In[1][3](n)"
+set_location_assignment PIN_AK24 -to LVDS_In[2][0]
+set_location_assignment PIN_AJ25 -to "LVDS_In[2][0](n)"
+set_location_assignment PIN_AF20 -to LVDS_In[2][1]
+set_location_assignment PIN_AE20 -to "LVDS_In[2][1](n)"
+set_location_assignment PIN_AH22 -to LVDS_In[2][2]
+set_location_assignment PIN_AH21 -to "LVDS_In[2][2](n)"
+set_location_assignment PIN_AP23 -to LVDS_In[2][3]
+set_location_assignment PIN_AP22 -to "LVDS_In[2][3](n)"
+set_location_assignment PIN_AJ23 -to LVDS_In[3][0]
+set_location_assignment PIN_AH23 -to "LVDS_In[3][0](n)"
+set_location_assignment PIN_AP20 -to LVDS_In[3][1]
+set_location_assignment PIN_AN20 -to "LVDS_In[3][1](n)"
+set_location_assignment PIN_AE25 -to LVDS_In[3][2]
+set_location_assignment PIN_AD24 -to "LVDS_In[3][2](n)"
+set_location_assignment PIN_AC25 -to LVDS_In[3][3]
+set_location_assignment PIN_AC24 -to "LVDS_In[3][3](n)"
+set_location_assignment PIN_D8 -to LVDS_In[4][0]
+set_location_assignment PIN_D9 -to "LVDS_In[4][0](n)"
+set_location_assignment PIN_C3 -to LVDS_In[4][1]
+set_location_assignment PIN_D3 -to "LVDS_In[4][1](n)"
+set_location_assignment PIN_C8 -to LVDS_In[4][2]
+set_location_assignment PIN_D7 -to "LVDS_In[4][2](n)"
+set_location_assignment PIN_A7 -to LVDS_In[4][3]
+set_location_assignment PIN_A6 -to "LVDS_In[4][3](n)"
+set_location_assignment PIN_C16 -to LVDS_In[5][0]
+set_location_assignment PIN_D16 -to "LVDS_In[5][0](n)"
+set_location_assignment PIN_A14 -to LVDS_In[5][1]
+set_location_assignment PIN_B15 -to "LVDS_In[5][1](n)"
+set_location_assignment PIN_B6 -to LVDS_In[5][2]
+set_location_assignment PIN_C7 -to "LVDS_In[5][2](n)"
+set_location_assignment PIN_D1 -to LVDS_In[5][3]
+set_location_assignment PIN_E2 -to "LVDS_In[5][3](n)"
+set_location_assignment PIN_A3 -to LVDS_In[6][0]
+set_location_assignment PIN_B3 -to "LVDS_In[6][0](n)"
+set_location_assignment PIN_C6 -to LVDS_In[6][1]
+set_location_assignment PIN_D5 -to "LVDS_In[6][1](n)"
+set_location_assignment PIN_A10 -to LVDS_In[6][2]
+set_location_assignment PIN_B9 -to "LVDS_In[6][2](n)"
+set_location_assignment PIN_H8 -to LVDS_In[6][3]
+set_location_assignment PIN_J8 -to "LVDS_In[6][3](n)"
+set_location_assignment PIN_E3 -to LVDS_In[7][0]
+set_location_assignment PIN_E4 -to "LVDS_In[7][0](n)"
+set_location_assignment PIN_D6 -to LVDS_In[7][1]
+set_location_assignment PIN_E6 -to "LVDS_In[7][1](n)"
+set_location_assignment PIN_N10 -to LVDS_In[7][2]
+set_location_assignment PIN_N11 -to "LVDS_In[7][2](n)"
+set_location_assignment PIN_K9 -to LVDS_In[7][3]
+set_location_assignment PIN_K8 -to "LVDS_In[7][3](n)"
+set_location_assignment PIN_AG21 -to LVDS_Out[0][0]
+set_location_assignment PIN_AF22 -to "LVDS_Out[0][0](n)"
+set_location_assignment PIN_AK20 -to LVDS_Out[0][1]
+set_location_assignment PIN_AJ20 -to "LVDS_Out[0][1](n)"
+set_location_assignment PIN_AB25 -to LVDS_Out[0][2]
+set_location_assignment PIN_AA25 -to "LVDS_Out[0][2](n)"
+set_location_assignment PIN_AE24 -to LVDS_Out[1][0]
+set_location_assignment PIN_AE23 -to "LVDS_Out[1][0](n)"
+set_location_assignment PIN_AC22 -to LVDS_Out[1][1]
+set_location_assignment PIN_AB22 -to "LVDS_Out[1][1](n)"
+set_location_assignment PIN_AB20 -to LVDS_Out[1][2]
+set_location_assignment PIN_AA20 -to "LVDS_Out[1][2](n)"
+set_location_assignment PIN_AB21 -to LVDS_Out[2][0]
+set_location_assignment PIN_AA21 -to "LVDS_Out[2][0](n)"
+set_location_assignment PIN_AM23 -to LVDS_Out[2][1]
+set_location_assignment PIN_AL23 -to "LVDS_Out[2][1](n)"
+set_location_assignment PIN_AB23 -to LVDS_Out[2][2]
+set_location_assignment PIN_AA23 -to "LVDS_Out[2][2](n)"
+set_location_assignment PIN_AG24 -to LVDS_Out[3][0]
+set_location_assignment PIN_AF25 -to "LVDS_Out[3][0](n)"
+set_location_assignment PIN_AL24 -to LVDS_Out[3][1]
+set_location_assignment PIN_AK23 -to "LVDS_Out[3][1](n)"
+set_location_assignment PIN_AD23 -to LVDS_Out[3][2]
+set_location_assignment PIN_AC23 -to "LVDS_Out[3][2](n)"
+set_location_assignment PIN_J7 -to LVDS_Out[4][0]
+set_location_assignment PIN_K7 -to "LVDS_Out[4][0](n)"
+set_location_assignment PIN_A5 -to LVDS_Out[4][1]
+set_location_assignment PIN_A4 -to "LVDS_Out[4][1](n)"
+set_location_assignment PIN_A2 -to LVDS_Out[4][2]
+set_location_assignment PIN_B2 -to "LVDS_Out[4][2](n)"
+set_location_assignment PIN_E1 -to LVDS_Out[5][0]
+set_location_assignment PIN_F1 -to "LVDS_Out[5][0](n)"
+set_location_assignment PIN_E9 -to LVDS_Out[5][1]
+set_location_assignment PIN_F8 -to "LVDS_Out[5][1](n)"
+set_location_assignment PIN_G9 -to LVDS_Out[5][2]
+set_location_assignment PIN_H9 -to "LVDS_Out[5][2](n)"
+set_location_assignment PIN_J6 -to LVDS_Out[6][0]
+set_location_assignment PIN_K6 -to "LVDS_Out[6][0](n)"
+set_location_assignment PIN_G6 -to LVDS_Out[6][1]
+set_location_assignment PIN_H6 -to "LVDS_Out[6][1](n)"
+set_location_assignment PIN_E5 -to LVDS_Out[6][2]
+set_location_assignment PIN_F6 -to "LVDS_Out[6][2](n)"
+set_location_assignment PIN_L9 -to LVDS_Out[7][0]
+set_location_assignment PIN_M8 -to "LVDS_Out[7][0](n)"
+set_location_assignment PIN_J10 -to LVDS_Out[7][1]
+set_location_assignment PIN_K10 -to "LVDS_Out[7][1](n)"
+set_location_assignment PIN_E8 -to LVDS_Out[7][2]
+set_location_assignment PIN_F7 -to "LVDS_Out[7][2](n)"
+set_location_assignment PIN_AL9 -to SMA[1]
+set_location_assignment PIN_AK9 -to SMA[2]
+set_location_assignment PIN_AL8 -to SMA[3]
+set_location_assignment PIN_AL10 -to SMA[4]
+set_location_assignment PIN_AM10 -to SMA[5]
+set_location_assignment PIN_AM8 -to SMA[6]
+set_location_assignment PIN_AF10 -to syncOut
+set_location_assignment PIN_AC17 -to usb_CTL[0]
+set_location_assignment PIN_AC18 -to usb_CTL[1]
+set_location_assignment PIN_AA17 -to usb_CTL[2]
+set_location_assignment PIN_AJ16 -to usb_FD[15]
+set_location_assignment PIN_AC16 -to usb_FD[14]
+set_location_assignment PIN_AM16 -to usb_FD[13]
+set_location_assignment PIN_AH15 -to usb_FD[12]
+set_location_assignment PIN_AL15 -to usb_FD[11]
+set_location_assignment PIN_AK14 -to usb_FD[10]
+set_location_assignment PIN_AP16 -to usb_FD[9]
+set_location_assignment PIN_AH16 -to usb_FD[8]
+set_location_assignment PIN_AM14 -to usb_FD[7]
+set_location_assignment PIN_AF16 -to usb_FD[6]
+set_location_assignment PIN_AL14 -to usb_FD[5]
+set_location_assignment PIN_AN15 -to usb_FD[4]
+set_location_assignment PIN_AB16 -to usb_FD[3]
+set_location_assignment PIN_AE16 -to usb_FD[2]
+set_location_assignment PIN_AK15 -to usb_FD[1]
+set_location_assignment PIN_AL16 -to usb_FD[0]
+set_location_assignment PIN_AH18 -to usb_IFCLK
+set_location_assignment PIN_AJ17 -to usb_PA[7]
+set_location_assignment PIN_AK17 -to usb_PA[6]
+set_location_assignment PIN_AK18 -to usb_PA[5]
+set_location_assignment PIN_AN17 -to usb_PA[4]
+set_location_assignment PIN_AM17 -to usb_PA[3]
+set_location_assignment PIN_AP17 -to usb_PA[2]
+set_location_assignment PIN_AB17 -to usb_PA[1]
+set_location_assignment PIN_AE17 -to usb_PA[0]
+set_location_assignment PIN_AH17 -to usb_RDY[1]
+set_location_assignment PIN_AG17 -to usb_RDY[0]
+set_location_assignment PIN_AF17 -to usb_WAKEUP
+set_location_assignment PIN_AE18 -to usb_CLKOUT
+set_location_assignment PIN_AE10 -to "syncOut(n)"
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_instance_assignment -name IO_STANDARD LVDS -to clockIn[0]
+set_instance_assignment -name IO_STANDARD LVDS -to clockIn[1]
+set_instance_assignment -name IO_STANDARD LVDS -to clockIn[2]
+set_instance_assignment -name IO_STANDARD LVDS -to clockIn
+set_instance_assignment -name IO_STANDARD LVDS -to clockIn[3]
+set_instance_assignment -name IO_STANDARD LVDS -to "clockIn[0](n)"
+set_instance_assignment -name IO_STANDARD LVDS -to "clockIn[1](n)"
+set_instance_assignment -name IO_STANDARD LVDS -to "clockIn[2](n)"
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[7]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[6]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[5]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[4]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[3]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[2]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[1]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[0]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[7]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[6]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[5]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[4]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[3]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[2]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[1]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[0]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[0][0]
+set_instance_assignment -name IO_STANDARD LVDS -to "LVDS_In[0][0](n)"
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[0][1]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[0][2]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[0][3]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[1][0]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[1][1]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[1][2]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[1][3]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[2][0]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[2][1]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[2][2]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[2][3]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[3][0]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[3][1]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[3][2]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[3][3]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[4][0]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[4][1]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[4][2]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[4][3]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[5][0]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[5][1]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[5][2]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[5][3]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[6][0]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[6][1]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[6][2]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[6][3]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[7][0]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[7][1]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[7][2]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_In[7][3]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[7][2]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[7][1]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[0][0]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[0][1]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[0][2]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[1][0]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[1][1]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[1][2]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[2][0]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[2][1]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[2][2]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[3][0]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[3][1]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[3][2]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[4][0]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[4][1]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[4][2]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[5][0]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[5][1]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[5][2]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[6][0]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[6][1]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[6][2]
+set_instance_assignment -name IO_STANDARD LVDS -to LVDS_Out[7][0]
+set_instance_assignment -name IO_STANDARD LVDS -to syncOut
+set_global_assignment -name PROJECT_IP_REGENERATION_POLICY ALWAYS_REGENERATE_IP
+set_global_assignment -name TIMING_ANALYZER_MULTICORNER_ANALYSIS ON
+set_global_assignment -name AUTO_EXPORT_INCREMENTAL_COMPILATION ON
+set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_FILE ACC_main.qxp
+set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_POST_SYNTH ON
+set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_POST_FIT ON
+set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_ROUTING ON
+set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_PARTITION_NAME Top
+set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_FLATTEN ON
+set_global_assignment -name PARTITION_NETLIST_TYPE POST_FIT -section_id "usbRx:usbRx_gen"
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id "usbRx:usbRx_gen"
+set_global_assignment -name PARTITION_COLOR 14622752 -section_id "usbRx:usbRx_gen"
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id "usbTx:usbTx_gen"
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id "usbTx:usbTx_gen"
+set_global_assignment -name PARTITION_COLOR 2105567 -section_id "usbTx:usbTx_gen"
+set_location_assignment PIN_A22 -to DIPswitch[9]
+set_location_assignment PIN_K20 -to DIPswitch[8]
+set_location_assignment PIN_D21 -to DIPswitch[7]
+set_location_assignment PIN_G20 -to DIPswitch[6]
+set_location_assignment PIN_B21 -to DIPswitch[5]
+set_location_assignment PIN_B20 -to DIPswitch[4]
+set_location_assignment PIN_C20 -to DIPswitch[3]
+set_location_assignment PIN_L20 -to DIPswitch[2]
+set_location_assignment PIN_D20 -to DIPswitch[1]
+set_location_assignment PIN_C22 -to DIPswitch[0]
+set_global_assignment -name VHDL_FILE src/ACC_main.vhd
+set_global_assignment -name VHDL_FILE src/usb/usbTx.vhd
+set_global_assignment -name VHDL_FILE src/usb/usbRx.vhd
+set_global_assignment -name VHDL_FILE src/CommandHandler.vhd
+set_global_assignment -name VHDL_FILE src/DataHandler.vhd
+set_global_assignment -name VHDL_FILE src/uart/uart_rxBuffer.vhd
+set_global_assignment -name VHDL_FILE src/uart/uart.vhd
+set_global_assignment -name VHDL_FILE src/uart/uart_comms_8bit.vhd
+set_global_assignment -name VHDL_FILE src/triggerAndTime.vhd
+set_global_assignment -name VHDL_FILE src/synchronizer.vhd
+set_global_assignment -name QIP_FILE src/QIPcomponents/rx_data_ram.qip
+set_global_assignment -name VHDL_FILE src/monostable.vhd
+set_global_assignment -name VHDL_FILE src/ClockGenerator.vhd
+set_global_assignment -name VHDL_FILE src/usb/iobuf.vhd
+set_global_assignment -name VHDL_FILE src/components.vhd
+set_global_assignment -name VHDL_FILE src/defs.vhd
+set_global_assignment -name SDC_FILE ACC.sdc
+set_global_assignment -name SIP_FILE src/QIPcomponents/pll.sip
+set_global_assignment -name QIP_FILE src/QIPcomponents/pll.qip
+set_global_assignment -name ENABLE_SIGNALTAP ON
+set_global_assignment -name USE_SIGNALTAP_FILE lvds.stp
+set_global_assignment -name SLD_NODE_CREATOR_ID 110 -section_id lvds
+set_global_assignment -name SLD_NODE_ENTITY_NAME sld_signaltap -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|sys_clock" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[0] -to "commandHandler:CMD_HANDLER_MAP|cmdOut_valid" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[1] -to "commandHandler:CMD_HANDLER_MAP|din[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[2] -to "commandHandler:CMD_HANDLER_MAP|din[10]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[3] -to "commandHandler:CMD_HANDLER_MAP|din[11]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[4] -to "commandHandler:CMD_HANDLER_MAP|din[12]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[5] -to "commandHandler:CMD_HANDLER_MAP|din[13]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[6] -to "commandHandler:CMD_HANDLER_MAP|din[14]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[7] -to "commandHandler:CMD_HANDLER_MAP|din[15]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[8] -to "commandHandler:CMD_HANDLER_MAP|din[16]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[9] -to "commandHandler:CMD_HANDLER_MAP|din[17]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[10] -to "commandHandler:CMD_HANDLER_MAP|din[18]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[11] -to "commandHandler:CMD_HANDLER_MAP|din[19]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[12] -to "commandHandler:CMD_HANDLER_MAP|din[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[13] -to "commandHandler:CMD_HANDLER_MAP|din[20]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[14] -to "commandHandler:CMD_HANDLER_MAP|din[21]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[15] -to "commandHandler:CMD_HANDLER_MAP|din[22]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[16] -to "commandHandler:CMD_HANDLER_MAP|din[23]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[17] -to "commandHandler:CMD_HANDLER_MAP|din[24]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[18] -to "commandHandler:CMD_HANDLER_MAP|din[25]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[19] -to "commandHandler:CMD_HANDLER_MAP|din[26]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[20] -to "commandHandler:CMD_HANDLER_MAP|din[27]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[21] -to "commandHandler:CMD_HANDLER_MAP|din[28]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[22] -to "commandHandler:CMD_HANDLER_MAP|din[29]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[23] -to "commandHandler:CMD_HANDLER_MAP|din[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[24] -to "commandHandler:CMD_HANDLER_MAP|din[30]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[25] -to "commandHandler:CMD_HANDLER_MAP|din[31]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[26] -to "commandHandler:CMD_HANDLER_MAP|din[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[27] -to "commandHandler:CMD_HANDLER_MAP|din[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[28] -to "commandHandler:CMD_HANDLER_MAP|din[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[29] -to "commandHandler:CMD_HANDLER_MAP|din[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[30] -to "commandHandler:CMD_HANDLER_MAP|din[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[31] -to "commandHandler:CMD_HANDLER_MAP|din[8]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[32] -to "commandHandler:CMD_HANDLER_MAP|din[9]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[0] -to "commandHandler:CMD_HANDLER_MAP|cmdOut_valid" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[1] -to "commandHandler:CMD_HANDLER_MAP|din[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[2] -to "commandHandler:CMD_HANDLER_MAP|din[10]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[3] -to "commandHandler:CMD_HANDLER_MAP|din[11]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[4] -to "commandHandler:CMD_HANDLER_MAP|din[12]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[5] -to "commandHandler:CMD_HANDLER_MAP|din[13]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[6] -to "commandHandler:CMD_HANDLER_MAP|din[14]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[7] -to "commandHandler:CMD_HANDLER_MAP|din[15]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[8] -to "commandHandler:CMD_HANDLER_MAP|din[16]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[9] -to "commandHandler:CMD_HANDLER_MAP|din[17]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[10] -to "commandHandler:CMD_HANDLER_MAP|din[18]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[11] -to "commandHandler:CMD_HANDLER_MAP|din[19]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[12] -to "commandHandler:CMD_HANDLER_MAP|din[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[13] -to "commandHandler:CMD_HANDLER_MAP|din[20]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[14] -to "commandHandler:CMD_HANDLER_MAP|din[21]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[15] -to "commandHandler:CMD_HANDLER_MAP|din[22]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[16] -to "commandHandler:CMD_HANDLER_MAP|din[23]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[17] -to "commandHandler:CMD_HANDLER_MAP|din[24]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[18] -to "commandHandler:CMD_HANDLER_MAP|din[25]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[19] -to "commandHandler:CMD_HANDLER_MAP|din[26]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[20] -to "commandHandler:CMD_HANDLER_MAP|din[27]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[21] -to "commandHandler:CMD_HANDLER_MAP|din[28]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[22] -to "commandHandler:CMD_HANDLER_MAP|din[29]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[23] -to "commandHandler:CMD_HANDLER_MAP|din[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[24] -to "commandHandler:CMD_HANDLER_MAP|din[30]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[25] -to "commandHandler:CMD_HANDLER_MAP|din[31]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[26] -to "commandHandler:CMD_HANDLER_MAP|din[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[27] -to "commandHandler:CMD_HANDLER_MAP|din[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[28] -to "commandHandler:CMD_HANDLER_MAP|din[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[29] -to "commandHandler:CMD_HANDLER_MAP|din[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[30] -to "commandHandler:CMD_HANDLER_MAP|din[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[31] -to "commandHandler:CMD_HANDLER_MAP|din[8]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[32] -to "commandHandler:CMD_HANDLER_MAP|din[9]" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_BLOCK_TYPE=AUTO" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_INFO=805334528" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_POWER_UP_TRIGGER=0" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_INVERSION_MASK_LENGTH=0" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ATTRIBUTE_MEM_MODE=OFF" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_FLOW_USE_GENERATED=0" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_BITS=11" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_BUFFER_FULL_STOP=1" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_CURRENT_RESOURCE_WIDTH=1" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INCREMENTAL_ROUTING=1" -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[4] -to lvds|vcc -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[7] -to lvds|vcc -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[8] -to lvds|vcc -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[9] -to lvds|gnd -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[11] -to lvds|gnd -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[12] -to lvds|gnd -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[13] -to lvds|gnd -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[19] -to lvds|vcc -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[22] -to lvds|vcc -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[24] -to lvds|gnd -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[28] -to lvds|gnd -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[30] -to lvds|gnd -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL=1" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_IN_ENABLED=0" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_PIPELINE=0" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_PIPELINE=0" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_COUNTER_PIPELINE=0" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=basic,1," -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=0" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SEGMENT_SIZE=2048" -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[0] -to lvds|gnd -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[1] -to lvds|vcc -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[2] -to lvds|gnd -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[5] -to lvds|vcc -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[10] -to lvds|vcc -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[20] -to lvds|gnd -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[21] -to lvds|gnd -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[27] -to lvds|vcc -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SAMPLE_DEPTH=2048" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[33] -to "dataHandler:DATA_HANDLER_MAP|\\DATA_HANDLER:state.BUS_REQUEST" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[34] -to "dataHandler:DATA_HANDLER_MAP|\\DATA_HANDLER:state.CHECK_IF_SEND_DATA" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[35] -to "dataHandler:DATA_HANDLER_MAP|\\DATA_HANDLER:state.DATA_ACK" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[36] -to "dataHandler:DATA_HANDLER_MAP|\\DATA_HANDLER:state.DATA_SEND" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[37] -to "dataHandler:DATA_HANDLER_MAP|\\DATA_HANDLER:state.DONE" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[38] -to "dataHandler:DATA_HANDLER_MAP|bufferReadoutDone[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[39] -to "dataHandler:DATA_HANDLER_MAP|bufferReadoutDone[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[40] -to "dataHandler:DATA_HANDLER_MAP|bufferReadoutDone[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[41] -to "dataHandler:DATA_HANDLER_MAP|bufferReadoutDone[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[42] -to "dataHandler:DATA_HANDLER_MAP|bufferReadoutDone[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[43] -to "dataHandler:DATA_HANDLER_MAP|bufferReadoutDone[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[44] -to "dataHandler:DATA_HANDLER_MAP|bufferReadoutDone[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[45] -to "dataHandler:DATA_HANDLER_MAP|bufferReadoutDone[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[46] -to "dataHandler:DATA_HANDLER_MAP|dout[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[47] -to "dataHandler:DATA_HANDLER_MAP|dout[10]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[48] -to "dataHandler:DATA_HANDLER_MAP|dout[11]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[49] -to "dataHandler:DATA_HANDLER_MAP|dout[12]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[50] -to "dataHandler:DATA_HANDLER_MAP|dout[13]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[51] -to "dataHandler:DATA_HANDLER_MAP|dout[14]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[52] -to "dataHandler:DATA_HANDLER_MAP|dout[15]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[53] -to "dataHandler:DATA_HANDLER_MAP|dout[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[54] -to "dataHandler:DATA_HANDLER_MAP|dout[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[55] -to "dataHandler:DATA_HANDLER_MAP|dout[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[56] -to "dataHandler:DATA_HANDLER_MAP|dout[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[57] -to "dataHandler:DATA_HANDLER_MAP|dout[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[58] -to "dataHandler:DATA_HANDLER_MAP|dout[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[59] -to "dataHandler:DATA_HANDLER_MAP|dout[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[60] -to "dataHandler:DATA_HANDLER_MAP|dout[8]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[61] -to "dataHandler:DATA_HANDLER_MAP|dout[9]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[62] -to "dataHandler:DATA_HANDLER_MAP|dout_valid" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[63] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[64] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][10]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[65] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][11]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[66] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][12]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[67] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][13]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[68] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][14]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[69] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][15]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[70] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[71] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[72] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[73] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[74] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[75] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[76] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[77] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][8]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[78] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][9]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[79] -to "dataHandler:DATA_HANDLER_MAP|rxPacketReceived[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[80] -to "dataHandler:DATA_HANDLER_MAP|rxPacketReceived[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[81] -to "dataHandler:DATA_HANDLER_MAP|rxPacketReceived[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[82] -to "dataHandler:DATA_HANDLER_MAP|rxPacketReceived[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[83] -to "dataHandler:DATA_HANDLER_MAP|rxPacketReceived[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[84] -to "dataHandler:DATA_HANDLER_MAP|rxPacketReceived[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[85] -to "dataHandler:DATA_HANDLER_MAP|rxPacketReceived[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[86] -to "dataHandler:DATA_HANDLER_MAP|rxPacketReceived[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[87] -to "dataHandler:DATA_HANDLER_MAP|rxPacketStarted[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[88] -to "dataHandler:DATA_HANDLER_MAP|rxPacketStarted[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[89] -to "dataHandler:DATA_HANDLER_MAP|rxPacketStarted[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[90] -to "dataHandler:DATA_HANDLER_MAP|rxPacketStarted[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[91] -to "dataHandler:DATA_HANDLER_MAP|rxPacketStarted[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[92] -to "dataHandler:DATA_HANDLER_MAP|rxPacketStarted[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[93] -to "dataHandler:DATA_HANDLER_MAP|rxPacketStarted[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[94] -to "dataHandler:DATA_HANDLER_MAP|rxPacketStarted[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[95] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|done" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[96] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|reset" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[97] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxIn" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[98] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[99] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[10]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[100] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[11]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[101] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[12]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[102] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[13]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[103] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[14]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[104] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[15]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[105] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[106] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[107] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[108] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[109] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[110] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[111] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[112] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[8]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[113] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[9]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[114] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut_valid" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[115] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[116] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[10]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[117] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[11]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[118] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[12]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[119] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[13]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[120] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[14]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[121] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[15]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[122] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[16]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[123] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[17]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[124] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[18]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[125] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[19]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[126] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[127] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[20]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[128] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[21]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[129] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[22]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[130] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[23]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[131] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[24]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[132] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[25]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[133] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[26]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[134] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[27]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[135] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[28]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[136] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[29]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[137] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[138] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[30]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[139] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[31]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[140] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[141] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[142] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[143] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[144] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[145] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[8]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[146] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[9]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[147] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txOut" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[148] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txState" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[149] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|uart:uart0|txData[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[150] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|uart:uart0|txData[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[151] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|uart:uart0|txData[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[152] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|uart:uart0|txData[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[153] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|uart:uart0|txData[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[154] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|uart:uart0|txData[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[155] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|uart:uart0|txData[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[156] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|uart:uart0|txData[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[157] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[158] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[10]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[159] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[11]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[160] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[12]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[161] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[13]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[162] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[14]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[163] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[15]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[164] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[165] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[166] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[167] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[168] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[169] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[170] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[171] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[8]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[172] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[9]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[173] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|read_enable" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[174] -to "usbTx:usbTx_gen|PKTEND" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[175] -to "usbTx:usbTx_gen|busReadEnable" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[176] -to "usbTx:usbTx_gen|busy" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[177] -to "usbTx:usbTx_gen|din[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[178] -to "usbTx:usbTx_gen|din[10]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[179] -to "usbTx:usbTx_gen|din[11]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[180] -to "usbTx:usbTx_gen|din[12]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[181] -to "usbTx:usbTx_gen|din[13]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[182] -to "usbTx:usbTx_gen|din[14]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[183] -to "usbTx:usbTx_gen|din[15]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[184] -to "usbTx:usbTx_gen|din[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[185] -to "usbTx:usbTx_gen|din[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[186] -to "usbTx:usbTx_gen|din[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[187] -to "usbTx:usbTx_gen|din[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[188] -to "usbTx:usbTx_gen|din[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[189] -to "usbTx:usbTx_gen|din[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[190] -to "usbTx:usbTx_gen|din[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[191] -to "usbTx:usbTx_gen|din[8]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[192] -to "usbTx:usbTx_gen|din[9]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[193] -to "usbTx:usbTx_gen|din_valid" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[194] -to "usbTx:usbTx_gen|dout[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[195] -to "usbTx:usbTx_gen|dout[10]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[196] -to "usbTx:usbTx_gen|dout[11]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[197] -to "usbTx:usbTx_gen|dout[12]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[198] -to "usbTx:usbTx_gen|dout[13]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[199] -to "usbTx:usbTx_gen|dout[14]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[200] -to "usbTx:usbTx_gen|dout[15]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[201] -to "usbTx:usbTx_gen|dout[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[202] -to "usbTx:usbTx_gen|dout[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[203] -to "usbTx:usbTx_gen|dout[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[204] -to "usbTx:usbTx_gen|dout[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[205] -to "usbTx:usbTx_gen|dout[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[206] -to "usbTx:usbTx_gen|dout[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[207] -to "usbTx:usbTx_gen|dout[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[208] -to "usbTx:usbTx_gen|dout[8]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[209] -to "usbTx:usbTx_gen|dout[9]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[210] -to "usbTx:usbTx_gen|state.BUFFER_WAIT" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[211] -to "usbTx:usbTx_gen|state.BUS_REQUEST" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[212] -to "usbTx:usbTx_gen|state.DATA_WAIT" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[213] -to "usbTx:usbTx_gen|state.PKTEND_HIGH" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[214] -to "usbTx:usbTx_gen|state.PKTEND_LOW" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[215] -to "usbTx:usbTx_gen|state.WR_HIGH" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[216] -to "usbTx:usbTx_gen|state.WR_LOW" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[217] -to "usbTx:usbTx_gen|txAck" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[218] -to "usbTx:usbTx_gen|txBusy" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[219] -to "usbTx:usbTx_gen|txLockReq" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[33] -to "dataHandler:DATA_HANDLER_MAP|\\DATA_HANDLER:state.BUS_REQUEST" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[34] -to "dataHandler:DATA_HANDLER_MAP|\\DATA_HANDLER:state.CHECK_IF_SEND_DATA" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[35] -to "dataHandler:DATA_HANDLER_MAP|\\DATA_HANDLER:state.DATA_ACK" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[36] -to "dataHandler:DATA_HANDLER_MAP|\\DATA_HANDLER:state.DATA_SEND" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[37] -to "dataHandler:DATA_HANDLER_MAP|\\DATA_HANDLER:state.DONE" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[38] -to "dataHandler:DATA_HANDLER_MAP|bufferReadoutDone[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[39] -to "dataHandler:DATA_HANDLER_MAP|bufferReadoutDone[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[40] -to "dataHandler:DATA_HANDLER_MAP|bufferReadoutDone[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[41] -to "dataHandler:DATA_HANDLER_MAP|bufferReadoutDone[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[42] -to "dataHandler:DATA_HANDLER_MAP|bufferReadoutDone[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[43] -to "dataHandler:DATA_HANDLER_MAP|bufferReadoutDone[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[44] -to "dataHandler:DATA_HANDLER_MAP|bufferReadoutDone[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[45] -to "dataHandler:DATA_HANDLER_MAP|bufferReadoutDone[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[46] -to "dataHandler:DATA_HANDLER_MAP|dout[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[47] -to "dataHandler:DATA_HANDLER_MAP|dout[10]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[48] -to "dataHandler:DATA_HANDLER_MAP|dout[11]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[49] -to "dataHandler:DATA_HANDLER_MAP|dout[12]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[50] -to "dataHandler:DATA_HANDLER_MAP|dout[13]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[51] -to "dataHandler:DATA_HANDLER_MAP|dout[14]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[52] -to "dataHandler:DATA_HANDLER_MAP|dout[15]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[53] -to "dataHandler:DATA_HANDLER_MAP|dout[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[54] -to "dataHandler:DATA_HANDLER_MAP|dout[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[55] -to "dataHandler:DATA_HANDLER_MAP|dout[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[56] -to "dataHandler:DATA_HANDLER_MAP|dout[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[57] -to "dataHandler:DATA_HANDLER_MAP|dout[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[58] -to "dataHandler:DATA_HANDLER_MAP|dout[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[59] -to "dataHandler:DATA_HANDLER_MAP|dout[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[60] -to "dataHandler:DATA_HANDLER_MAP|dout[8]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[61] -to "dataHandler:DATA_HANDLER_MAP|dout[9]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[62] -to "dataHandler:DATA_HANDLER_MAP|dout_valid" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[63] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[64] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][10]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[65] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][11]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[66] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][12]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[67] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][13]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[68] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][14]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[69] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][15]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[70] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[71] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[72] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[73] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[74] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[75] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[76] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[77] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][8]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[78] -to "dataHandler:DATA_HANDLER_MAP|rxDataLen[0][9]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[79] -to "dataHandler:DATA_HANDLER_MAP|rxPacketReceived[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[80] -to "dataHandler:DATA_HANDLER_MAP|rxPacketReceived[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[81] -to "dataHandler:DATA_HANDLER_MAP|rxPacketReceived[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[82] -to "dataHandler:DATA_HANDLER_MAP|rxPacketReceived[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[83] -to "dataHandler:DATA_HANDLER_MAP|rxPacketReceived[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[84] -to "dataHandler:DATA_HANDLER_MAP|rxPacketReceived[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[85] -to "dataHandler:DATA_HANDLER_MAP|rxPacketReceived[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[86] -to "dataHandler:DATA_HANDLER_MAP|rxPacketReceived[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[87] -to "dataHandler:DATA_HANDLER_MAP|rxPacketStarted[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[88] -to "dataHandler:DATA_HANDLER_MAP|rxPacketStarted[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[89] -to "dataHandler:DATA_HANDLER_MAP|rxPacketStarted[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[90] -to "dataHandler:DATA_HANDLER_MAP|rxPacketStarted[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[91] -to "dataHandler:DATA_HANDLER_MAP|rxPacketStarted[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[92] -to "dataHandler:DATA_HANDLER_MAP|rxPacketStarted[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[93] -to "dataHandler:DATA_HANDLER_MAP|rxPacketStarted[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[94] -to "dataHandler:DATA_HANDLER_MAP|rxPacketStarted[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[95] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|done" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[96] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|reset" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[97] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxIn" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[98] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[99] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[10]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[100] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[11]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[101] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[12]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[102] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[13]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[103] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[14]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[104] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[15]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[105] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[106] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[107] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[108] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[109] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[110] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[111] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[112] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[8]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[113] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut[9]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[114] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|rxOut_valid" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[115] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[116] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[10]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[117] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[11]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[118] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[12]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[119] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[13]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[120] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[14]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[121] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[15]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[122] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[16]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[123] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[17]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[124] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[18]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[125] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[19]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[126] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[127] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[20]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[128] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[21]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[129] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[22]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[130] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[23]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[131] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[24]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[132] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[25]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[133] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[26]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[134] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[27]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[135] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[28]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[136] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[29]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[137] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[138] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[30]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[139] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[31]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[140] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[141] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[142] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[143] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[144] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[145] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[8]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[146] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txIn[9]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[147] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txOut" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[148] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|txState" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[149] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|uart:uart0|txData[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[150] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|uart:uart0|txData[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[151] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|uart:uart0|txData[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[152] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|uart:uart0|txData[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[153] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|uart:uart0|txData[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[154] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|uart:uart0|txData[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[155] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|uart:uart0|txData[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[156] -to "uart_comms_8bit:\\uart_comms_8bit_gen:0:uart_comms_8bit_map|uart:uart0|txData[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[157] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[158] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[10]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[159] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[11]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[160] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[12]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[161] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[13]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[162] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[14]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[163] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[15]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[164] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[165] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[166] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[167] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[168] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[169] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[170] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[171] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[8]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[172] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|dout[9]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[173] -to "uart_rxBuffer:\\uart_rxBuffer_gen:0:uart_rxBuffer_map|read_enable" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[174] -to "usbTx:usbTx_gen|PKTEND" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[175] -to "usbTx:usbTx_gen|busReadEnable" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[176] -to "usbTx:usbTx_gen|busy" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[177] -to "usbTx:usbTx_gen|din[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[178] -to "usbTx:usbTx_gen|din[10]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[179] -to "usbTx:usbTx_gen|din[11]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[180] -to "usbTx:usbTx_gen|din[12]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[181] -to "usbTx:usbTx_gen|din[13]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[182] -to "usbTx:usbTx_gen|din[14]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[183] -to "usbTx:usbTx_gen|din[15]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[184] -to "usbTx:usbTx_gen|din[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[185] -to "usbTx:usbTx_gen|din[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[186] -to "usbTx:usbTx_gen|din[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[187] -to "usbTx:usbTx_gen|din[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[188] -to "usbTx:usbTx_gen|din[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[189] -to "usbTx:usbTx_gen|din[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[190] -to "usbTx:usbTx_gen|din[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[191] -to "usbTx:usbTx_gen|din[8]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[192] -to "usbTx:usbTx_gen|din[9]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[193] -to "usbTx:usbTx_gen|din_valid" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[194] -to "usbTx:usbTx_gen|dout[0]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[195] -to "usbTx:usbTx_gen|dout[10]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[196] -to "usbTx:usbTx_gen|dout[11]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[197] -to "usbTx:usbTx_gen|dout[12]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[198] -to "usbTx:usbTx_gen|dout[13]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[199] -to "usbTx:usbTx_gen|dout[14]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[200] -to "usbTx:usbTx_gen|dout[15]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[201] -to "usbTx:usbTx_gen|dout[1]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[202] -to "usbTx:usbTx_gen|dout[2]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[203] -to "usbTx:usbTx_gen|dout[3]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[204] -to "usbTx:usbTx_gen|dout[4]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[205] -to "usbTx:usbTx_gen|dout[5]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[206] -to "usbTx:usbTx_gen|dout[6]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[207] -to "usbTx:usbTx_gen|dout[7]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[208] -to "usbTx:usbTx_gen|dout[8]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[209] -to "usbTx:usbTx_gen|dout[9]" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[210] -to "usbTx:usbTx_gen|state.BUFFER_WAIT" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[211] -to "usbTx:usbTx_gen|state.BUS_REQUEST" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[212] -to "usbTx:usbTx_gen|state.DATA_WAIT" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[213] -to "usbTx:usbTx_gen|state.PKTEND_HIGH" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[214] -to "usbTx:usbTx_gen|state.PKTEND_LOW" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[215] -to "usbTx:usbTx_gen|state.WR_HIGH" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[216] -to "usbTx:usbTx_gen|state.WR_LOW" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[217] -to "usbTx:usbTx_gen|txAck" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[218] -to "usbTx:usbTx_gen|txBusy" -section_id lvds
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[219] -to "usbTx:usbTx_gen|txLockReq" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_DATA_BITS=220" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_BITS=220" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_BITS=220" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" -section_id lvds
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=685" -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[3] -to lvds|gnd -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[6] -to lvds|vcc -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[14] -to lvds|vcc -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[15] -to lvds|gnd -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[16] -to lvds|vcc -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[17] -to lvds|gnd -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[18] -to lvds|gnd -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[23] -to lvds|vcc -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[25] -to lvds|gnd -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[26] -to lvds|gnd -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[29] -to lvds|gnd -section_id lvds
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[31] -to lvds|gnd -section_id lvds
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+set_instance_assignment -name PARTITION_HIERARCHY usbrx_e2b11 -to "usbRx:usbRx_gen" -section_id "usbRx:usbRx_gen"
+set_instance_assignment -name PARTITION_HIERARCHY usbtx_b5f61 -to "usbTx:usbTx_gen" -section_id "usbTx:usbTx_gen"
+set_global_assignment -name SLD_FILE db/lvds_auto_stripped.stp

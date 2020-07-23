@@ -1,0 +1,151 @@
+--------------------------------------------------
+-- University of Chicago
+-- LAPPD system firmware
+--------------------------------------------------
+-- module		: 	WilkinsonCtrlLoop,vhd
+-- author		: 	D. Greenshields
+-- date			: 	July 2020
+-- description	:  Wilkinson control loop
+--------------------------------------------------
+
+library IEEE;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
+use work.defs.all;
+use work.components.Wilkinson_Feedback_Loop;
+
+
+entity ADC_Ctrl is 
+	port(
+		clock			:	in		std_logic;			--40MHz	
+		reset			:	in		std_logic;
+		trigFlag		:	in		std_logic;
+		RO_EN 		:	out	std_logic;
+		adcClear		:	out	std_logic;
+		adcLatch		:	out	std_logic
+);
+end ADC_Ctrl;
+
+architecture vhdl of ADC_Ctrl is
+	
+	type state_type is (INIT,  RAMPING, EXTLATCH_RISE, EXTLATCH_FALL,  RAMPDONE);
+	signal state	:	state_type;
+	
+	signal 	RAMP			:	std_logic := '1';
+	signal 	RAMP_CNT		:	std_logic_vector(10 downto 0); --:= b"00000000000";
+	signal 	RAMP_DONE	:	std_logic;
+
+
+begin
+	
+
+----------------------------------------------------------------
+--PSEC-4 WILK. ADC CONTROL
+---------------------------------------------------------------- 		
+process(clock)
+variable i : integer range 50 downto 0;
+begin
+	if (falling_edge(clock)) then
+		
+		if (reset = '1') then 
+			
+			RAMP 			<= '0';
+			RAMP_DONE 	<= '0';
+			RAMP_CNT 	<= (others => '0');
+			state			<= INIT;
+			adcClear 	<= '1';
+			adcLatch 	<= '0'; --latch follows trigger for now
+			i 				:= 0;
+			RO_EN 		<= '0';
+
+		elsif (trigFlag = '1')  then 
+		
+			case state is
+				
+				-------------------------						
+				when INIT =>
+				
+					i	:= i+1;   -- some setup time
+					adcLatch <= '1';
+					RO_EN 	<= '1';
+					RAMP 		<= '1';
+					if i = 12 then
+						i	:= 0;
+						RAMP 			<= '0';
+						state	<= RAMPING;
+					end if;
+					
+				-------------------------	
+				when RAMPING =>					
+					adcClear 	<= '0';  	 -- ramp active low
+					RAMP_CNT 	<= RAMP_CNT + 1;
+					if RAMP_CNT = WILKRAMPCOUNT then  --set ramp length w.r.t. clock
+						RAMP_CNT 	<= (others => '0');
+							RO_EN 		<='0';
+						state 	<= EXTLATCH_RISE;
+					end if;
+			
+				-------------------------
+				when EXTLATCH_RISE =>   --latch transparency pulse
+					i 	:= i+1;
+					if i = 1 then
+						i	:= 0;
+						state	<= EXTLATCH_FALL;
+					end if;
+					
+				
+				when EXTLATCH_FALL =>
+					i	:= i+1;
+					if i = 1  then	
+						i	:= 0;
+						state <= RAMPDONE;
+					end if;
+
+				-------------------------
+				when RAMPDONE =>
+					RAMP_DONE 	<= '1';
+			
+			end case;
+		end if;
+	end if;
+end process;		
+
+
+	
+	
+	
+	
+	xWILK_FDBK	:	Wilkinson_Feedback_Loop
+	port map(
+			ENABLE_FEEDBACK 		=> not reset,     
+         RESET_FEEDBACK 		=> xRESETFDBK,      
+         REFRESH_CLOCK  		=> xREFRSH_CLK,     
+         DAC_SYNC_CLOCK   		=> xDAC_CLK,   
+         WILK_MONITOR_BIT   	=> xRO_MON, 
+         DESIRED_COUNT_VALUE 	=> xDESIRECOUNT,
+         CURRENT_COUNT_VALUE 	=> xCOUNT_VALUE,
+         DESIRED_DAC_VALUE   	=> xDAC_VALUE);
+		
+	
+
+
+	
+    xVCDL_MON : VCDL_Monitor_Loop 
+        port map(
+                                RESET_FEEDBACK      => xRESETFDBK,
+                                REFRESH_CLOCK       => xREFRSH_CLK,
+                                VCDL_MONITOR_BIT    => xDLL_CLOCK,
+                                CURRENT_COUNT_VALUE => xVCDL_COUNT);
+
+										 
+										
+									
+								
+							
+							
+						
+end vhdl;
+	
+		
+		

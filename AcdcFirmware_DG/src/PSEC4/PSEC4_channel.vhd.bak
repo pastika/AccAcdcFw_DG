@@ -1,0 +1,430 @@
+---------------------------------------------------------------------------------
+-- Univ. of Chicago  
+--    
+--
+-- PROJECT:      ANNIE - ACDC
+-- FILE:         ACDC_main.vhd
+-- AUTHOR:       D. Greenshields
+-- DATE:         July 2020
+--
+-- DESCRIPTION:  top-level firmware module for ACDC
+--
+---------------------------------------------------------------------------------
+
+
+library IEEE; 
+use ieee.std_logic_1164.all;
+USE ieee.numeric_std.ALL; 
+use work.defs.all;
+use work.components.all;
+
+
+------------------------------------
+-- Wiring of LVDS links as follows:
+------------------------------------
+--  LVDS_In(0)  = uart rx serial data in
+--  LVDS_In(1)  = trigger in
+--  LVDS_In(2)  = not used
+--  LVDS_In(3)  = system clk in from ACC 
+--
+--  LVDS_Out(0) = uart tx data out
+--  LVDS_Out(1) = not used
+--  LVDS_Out(2) = not used
+--  LVDS_Out(3) = not used
+------------------------------------
+
+
+entity ACDC_main is
+	port(	
+	
+		clockIn			: in	std_logic_vector(3 downto 0);
+		LVDS_in			: in	std_logic_vector(2 downto 0);
+		LVDS_out			: out std_logic_vector(3 downto 0);		
+		PSEC4_in			: in PSEC4_in_array_type;
+		PSEC4_out		: out PSEC4_out_array_type;
+		USB_in			: in USB_in_type;
+		USB_out			: out USB_out_type;
+		USB_bus			: inout USB_bus_type;
+		DAC				: out DAC_array_type;
+		led       		: out LED_matrix_type	
+		
+);
+end ACDC_main;
+	
+	
+	
+architecture vhdl of	ACDC_main is
+
+	signal	ch					: ch_type;	-- a complete set of signals for one channel
+   signal   cmd					: cmd_type;
+	signal	reset					: reset_type;
+	signal	selfTrig			   : selfTrig_type;
+	signal	trig			   	: trig_type;
+	signal	uartTx			   : uartTx_type;
+	signal	uartRx			   : uartRx_type;
+	signal	usbTx			   	: usbTx_type;
+	signal	usbRx			   	: usbRx_type;
+	
+	
+--misc
+	signal	info			: info_type;
+   signal   dataHandler_timeoutError: std_logic;	
+	signal	Vbias:	array12;
+	signal	pro_vdd:	array12;	
+	signal 	sysDone: std_logic;	
+	signal 	timestamp_resetRequest: std_logic;			
+	signal 	rateOnly: std_logic;	
+	signal 	sampleBin: std_logic_vector(3 downto 0);	
+ 	signal	DAC_value: std_logic_vector(11 downto 0);--send feedback DAC value to DAC firmware		
+	
+   
+begin
+
+
+
+
+
+------------------------------------
+--	RESET
+------------------------------------
+reset.len <= 40000000;
+
+RESET_PROCESS : process(clock.sys)
+-- perform a hardware reset by setting the ResetOut signal high for the time specified by ResetLength and then low again
+-- any ResetRequest inputs will restart the process
+variable t: natural := 0;		-- elaspsed time counter
+begin
+	if (rising_edge(clock.sys)) then 				
+		if (reset.request = '1') then t := 0; end if;   -- restart counter if new reset request					 										
+		if (t >= reset.len) then 
+			reset.global <= '0'; 
+		else
+			reset.global <= '1'; t := t + 1;
+		end if;
+	end if;
+end process;
+
+
+      
+------------------------------------
+--	CLOCKS
+------------------------------------
+CLOCK_GEN : clockGenerator port map(
+		INCLK				=> clockIn(0),
+		CLK_SYS_4x		=> clock.freq_160MHz, 		
+		CLK_SYS			=> clock.freq_40MHz,
+		ClockOut_1Hz	=> clock.freq_1Hz);
+      
+timeoutClock_gen: process(clock.sys)		-- generate a 1kHz clock for timeouts. Then the times are in milliseconds
+variable t: natural range 0 to 65535;		-- 16 bits to keep teh speed up
+begin
+	if (rising_Edge(clock.sys)) then
+		t := t + 1;
+		if (t >= 40000) then t := 0; end if;
+		if (t >= 20000) then clock.freq_1kHz <= '1'; else clock.freq_1kHz <= '0'; end if;
+	end if;
+end process;
+		
+clock.sys <= clock.freq_40MHz;
+clock.uart <= clock.freq_160MHz;
+clock.trig <= clock.freq_320MHz;
+clock.timer <= clock.freq_1kHz;     -- a 1ms clock for generating timeout delays etc
+      
+
+
+
+------------------------------------
+--	LVDS 
+------------------------------------
+
+-- out
+LVDS_out(0) <=	uartTx.serial;	--  serial comms tx
+LVDS_out(1) <=	'0';	-- not used
+LVDS_out(2) <=	'0';	-- not used
+LVDS_out(3) <=	'0';	-- not used
+
+-- in
+uartRx.serial <= LVDS_in(0);	--  serial comms rx
+trig.fromAcc <= LVDS_in(1);
+
+
+
+   
+------------------------------------
+--	UART
+------------------------------------
+-- serial comms with the acc
+uart_map : uart
+	GENERIC map ( 	dataLen => 8, clockDivRatio => 16 )
+	port map(
+		clock				=> clock.uart,  --clock for communications
+		reset				=> reset.global,	--global reset
+		txData			=> uartTx.byte,
+		txData_valid	=> uartTx.valid,	
+		txData_ack		=> uartTx.dataAck,
+		txReady			=>	uartTx.ready,
+		txOut				=> uartTx.serial,
+		rxData			=> uartRx.byte,
+		rxData_valid	=> uartRx.valid,
+		rxError			=> uartRx.error,
+		rxIn				=> uartRx.serial);
+	
+		
+
+------------------------------------
+--	RX COMMAND
+------------------------------------
+-- receives a command word from the ACC
+rx_cmd_map: rxCommand PORT map
+	(
+		reset 			=> reset.global,
+		clock 			=> clock,
+		din 				=> uartRx.byte,
+		din_valid		=> uartRx.valid,
+		dout 				=> cmd.word,			-- instruction word out
+		dOut_valid		=> cmd.valid);		
+
+
+	
+
+------------------------------------
+--	COMMAND HANDLER
+------------------------------------
+cmd_handler_map: commandHandler port map (
+		reset				=> reset.global,
+		clock				=> clock.sys,     
+      din		      =>	cmd.word,	
+      din_valid		=> cmd.valid,
+		ramReadRequest	=> dataBuffer.readRequest,
+		--trigThreshold			: out wordArray;   
+		--Vbias						: out wordArray;    
+		--DLL_Vdd					: out wordArray;     
+		--calSwitchEnable		: out std_logic_vector(14 downto 0);   
+		--eventAndTime_reset	: out std_logic;   
+		--reset_request			: out std_logic;   
+		DLL_resetRequest	=> dll.resetRequest   
+		--selfTrig_reset			: out std_logic;   
+		--selfTrigMask			: out std_logic_vector(29 downto 0);     
+		--selfTrigSetting		: out selfTrigSetting_type;   
+		--RO_target				: out wordArray;   
+		--enableLED				: out std_logic;   
+		--PLL_sampleMode			: out std_logic_vector(1 downto 0);       
+		--trigValid 				: out std_logic;   
+		--CC_event_RESET			: out std_logic
+		);
+
+		
+		
+		
+------------------------------------
+--	DATA HANDLER (UART TX)
+------------------------------------
+-- transmits the contents of the ram buffers plus other info over the uart
+dataHandler_map: dataHandler port map (
+		reset							=> reset.global,
+		sys_clock					=> clock.sys,
+		uart_clock					=> clock.uart,
+		info							=> info,
+      ramBuffer_readRequest	=> dataBuffer.readRequest,
+      ramBuffer_readDone		=> uartTx.dataTransferDone,
+		selfTrigRateCount			=> selfTrig.rateCount,
+		
+      -- rx buffer ram signals
+      ramAddress           	=> dataBuffer.readAddress,
+      ramData              	=> dataBuffer.readData,
+      
+      -- uart tx signals
+      txByte	            	=>	uartTx.byte,
+		txByte_valid	 	   	=> uartTx.valid,
+      txByte_ack           	=> uartTx.dataAck,
+      txReady              	=> uartTx.ready,
+      
+      -- error
+      timeoutError  				=> dataHandler_timeoutError
+);
+
+
+
+
+------------------------------------
+--	PSEC4 DATA BUFFER
+------------------------------------
+dataBuffer_gen: for i in N-1 downto 0 generate
+	PSEC4_dataBuffer_map : PSEC4_dataBuffer  
+	port map(	
+		PSEC4_in 	=> PSEC4_in(i),		-- input signals from the psec4 chip
+		readClk 		=> PSEC4_out(i).readClock,
+		
+		clock			=> clock.sys,
+		reset			=> reset.global,
+		rampDone		=> '0',
+		ramReadAddress	=> 0
+
+);
+end generate;
+
+
+
+
+------------------------------------
+--	PSEC4 DLL CONTROL
+------------------------------------
+DLL_RESET_PROCESS : process(clock.sys)
+variable t: natural := 0;		-- elaspsed time counter
+begin
+	if (rising_edge(clock.sys)) then 				
+		if (reset.global = '1' or DLL.resetRequest = '1') then 
+			t := 0; 		-- restart counter if new reset request	
+		end if;   				 										
+		if (t >= reset.len) then 
+			DLL.reset <= '0'; 				-- reset done
+		else
+			DLL.reset <= '1'; t := t + 1;		-- reset in progress
+		end if;
+		
+		for i in 0 to N-1 loop
+			PSEC4_out(i).DLLreset_n <= not DLL.reset;		-- common reset to all DLL modules, active low
+		end loop;
+	end if;
+end process;
+
+DLL_MONITOR_PROCESS: process(DLL.reset, PSEC4_in) 
+variable	DLL_counter_slv	:	array24;
+variable	DLL_counter		:	natArray24;
+begin
+	for i in 0 to N-1 loop
+		if (DLL.reset = '1') then
+			DLL_counter(i)	:=	0;
+		elsif rising_edge(PSEC4_in(i).DL_out) then
+			DLL_counter(i) := DLL_counter(i) + 1;
+		end if;
+		DLL_counter_slv(i) := std_logic_vector(to_unsigned(DLL_counter(i),24));
+		DLL.monitor(i)	<=	not DLL_counter_slv(i)(22);
+	end loop;
+end process;
+	
+
+
+------------------------------------
+--	DAC DRIVER
+------------------------------------
+DAC_driver_map: DAC_driver port map(	
+	
+		process_clock	=> clock.sys,
+		update_clock	=> '0',
+		reset				=> reset.global,	
+		trigThreshold	=> trig.threshold,
+		Vbias				=> Vbias,
+		pro_vdd			=> pro_vdd,
+		dll_vdd			=>	dll.vdd,		
+		dac_out			=> open);
+
+
+
+		
+		
+------------------------------------
+--	ADC CONTROL
+------------------------------------
+ADC_map: ADC_Ctrl port map(
+		sysClock			=> clock.sys,			--40MHz	
+		updateClock		=> clock.update,			--10Hz	
+		reset				=> reset.global,
+		reset_feedback	=> '0',--feedback.reset,
+		trigFlag			=> trig.flag,
+		RO_EN 			=> ringOsc.enable,
+		adcClear			=> adc.clear,
+		adcLatch			=> adc.latch);
+
+
+
+
+
+------------------------------------
+--	TRIGGER
+------------------------------------
+trigger_map: psec4_trigger_GLOBAL port map(
+			xTRIG_CLK				=> clock.trig,   --fast clk (320MHz) to trigger all chans once internally triggered
+			xMCLK						=> clock.sys,   --ext trig sync with write clk
+			reset						=> reset.global,   --wakeup reset (clears high)
+			xDONE						=> usbTx.dataTransferDone,	-- USB done signal		
+			xCC_TRIG					=> trig.fromAcc,   -- trig over LVDS
+			xDC_TRIG					=> trig.fromDigitalCard,   -- on-board SMA input		
+			xSELFTRIG 				=> selfTrig.internal,  	--internal trig sgnl		
+			xSELF_TRIGGER_MASK	=> selfTrig.mask,
+			xSELF_TRIGGER_SETTING => selfTrig.setting, --open dataspace for config of this block
+			xRESET_TRIG_FLAG		=> selfTrig.reset,			
+			xDLL_RESET				=> DLL.reset,
+			xPLL_LOCK				=> clock.pllLock,
+			xTRIG_VALID   			=> trig.valid,
+			xDONE_FROM_SYS			=> sysDone,
+			xRESET_TIMESTAMPS		=> timestamp_resetRequest,		
+			xTRIGGER_OUT			=> trig.output,
+			xSTART_ADC				=> ADCstart,
+			xTRIG_SIGNAL_REG		=> trig.reg,		
+			xSELFTRIG_CLEAR		=> selfTrig.Clear,	
+			xRATE_ONLY           => rateOnly,
+			xPSEC4_TRIGGER_INFO 	=> trig.Info,
+			xSAMPLE_BIN				=> sampleBin,
+			xSELF_TRIG_RATES		=> selfTrig.Rates,
+			xSELF_TRIG_SIGN		=> selfTrig.Sign);
+
+
+			
+			
+------------------------------------
+--	SELF TRIGGER
+------------------------------------
+SELF_TRIGGER_WRAPPER	:	psec4_SELFtrigger
+port map(
+			reset						=> reset.global,
+			xDONE						=> '0',--xDONE_FROM_SYS,
+			xTRIG_CLK       		=> clock.trig,
+			xRESET_FROM_FIRM		=> '0',--RESET_TRIG_FROM_FIRMWARE_FLAG,
+			xSELF_TRIGGER			=> selfTrig.sig,		
+			xSELF_TRIG_CLEAR		=> selfTrig.clear,
+			xSELF_TRIG_ENABLE		=> selfTrig.enable,
+			xSELF_TRIG_MASK		=> selfTrig.mask,
+			xSELF_TRIG_LATCHEDOR1=> selfTrig.latchedOR(1),
+			xSELF_TRIG_LATCHEDOR2=> selfTrig.latchedOR(2),
+			xSELF_TRIG_LATCHEDOR3=> selfTrig.latchedOR(3),
+			xSELF_TRIG_LATCHED	=> selfTrig.latched);
+
+
+
+
+			
+------------------------------------
+--	VCDL MONITOR
+------------------------------------
+VCDL_MON_gen: for i in N-1 downto 0 generate
+	VCDL_MON_map : VCDL_Monitor_Loop port map(
+		RESET_FEEDBACK      => feedback(i).reset,
+		REFRESH_CLOCK       => clock.update,
+		VCDL_MONITOR_BIT    => DLL_CLOCK,
+		CURRENT_COUNT_VALUE => VCDL_count);
+end generate;
+										 
+										
+			
+			
+			
+------------------------------------
+--	WILKINSON FEEDBACK LOOP
+------------------------------------
+xWILK_FDBK	:	Wilkinson_Feedback_Loop port map(
+	ENABLE_FEEDBACK 		=> not reset.global,     
+   RESET_FEEDBACK 		=> feedback(i).reset,      
+   REFRESH_CLOCK  		=> clock.update,     
+   DAC_SYNC_CLOCK   		=> clock.dac,   
+   WILK_MONITOR_BIT   	=> ringOsc(i).monitor, 
+   DESIRED_COUNT_VALUE 	=> feedback(i).target,
+   CURRENT_COUNT_VALUE 	=> feedback(i).current,
+   DESIRED_DAC_VALUE   	=> DAC_value(i));
+			
+
+
+
+
+ 
+end vhdl;

@@ -1,0 +1,17 @@
+#compilation files
+AccFirmware_DG/output_files/*
+AccFirmware_DG/db/*
+AccFirmware_DG/incremental_db/*
+
+AcdcFirmware_DG/*.jic
+AcdcFirmware_DG/*.sof
+AcdcFirmware_DG/*.pof
+AcdcFirmware_DG/*.map
+AcdcFirmware_DG/db/*
+AcdcFirmware_DG/incremental_db/*
+
+#mac generated hidden files
+AcdcFirmware_DG/.DS_Store
+AccFirmware_DG/.DS_Store
+.DS_Store
+./**/.DS_Store

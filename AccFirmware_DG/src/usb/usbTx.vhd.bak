@@ -1,0 +1,236 @@
+---------------------------------------------------------------------------------
+-- Univ. of Chicago HEP / electronics design group
+--    -- + KICP 2015 --
+--
+-- PROJECT:      
+-- FILE:         usb_32bit.vhd
+-- AUTHOR:       D. Greenshields
+-- DATE:         24/05/2020
+--
+-- DESCRIPTION:  usb CYPRESS interface  read/write driver
+--
+---------------------------------------------------------------------------------
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+entity usb_txDriver is
+   port ( 	
+			clock		   : in		std_logic;   	--usb clock 48 Mhz
+			reset	: in  	std_logic;	   --reset signal to usb block
+			din	   	: in		std_logic_vector (31 downto 0);  --data bus from firmware
+         enable      : in std_logic;
+         bufferReady   : in  	std_logic;		--the tx buffer on the chip is ready to accept data 
+         PKTEND  : out 	std_logic;		--usb packet end flag
+			start	      : in  	std_logic;		--usb start write cycle
+			wordCount	: in		std_logic_vector(23 downto 0);
+         done  		: out 	std_logic; 	   --usb done with write cycle to PC flag
+         dataClock   : out 	std_logic;		--usb signal-low write (generated clock)
+         busy  		: out 	std_logic;     --usb write-busy indicator (not a PHY pin)
+			dout  		: inout  std_logic_vector (15 downto 0));  --usb data bus to PHY
+	end usb_txDriver;
+
+	
+	
+architecture vhdl of usb_txDriver is
+
+	
+	constant	timeout_write: natural:= 10000000;
+	
+	--USB write signals
+	type USB_write_type is ( IDLE, RCHECK, STATE1, STATE2, STATE3, 
+								RD_DONE, SYNC1, SYNC2, SYNC3);
+	signal 	state	: USB_write_type;
+	signal 	NEXT_STATE 	: USB_write_type;
+	signal 	column 		: std_logic_vector(23 downto 0);
+	constant DELAY_HI 	: integer:= 5;
+	constant DELAY_LO 	: integer:= 5;
+	signal 	sync 			: std_logic;
+	signal 	STARTRD		: std_logic;
+	signal 	STARTSNC		: std_logic;
+	signal 	LoHi			: std_logic;
+	signal 	SLWR			: std_logic;
+	signal 	LRAD 			: std_logic_vector(23 downto 0);
+	
+	
+	signal 	reset_z:	std_logic;	-- reset signal synchronized with IFCLK
+	
+	
+	
+	
+begin
+
+
+
+
+
+---------------------------------------------------------------------------------
+--USB write to PC
+---------------------------------------------------------------------------------
+proc_usb_write : process(clock)
+	variable j: natural range 0 to 15 :=0;	-- Integer for delay	
+	variable timeout : natural:=0;	
+	begin
+		if (rising_edge(clock)) then
+		
+			-- sync
+			reset_z <= reset;
+			
+			
+			if (reset_z = '1') then	-- active high
+			
+				done			<= '0';
+				sync			<= '0';
+				LRAD 			<= (others=>'0');
+				LoHi 			<= '0';
+				SLWR 			<=	'1';
+				PKTEND 		<=	'1';
+				busy 		<=	'0';
+				state	<= IDLE;
+				NEXT_STATE	<= IDLE;	
+				
+			else
+			
+				done			<= '0';
+				busy 		<=	'1';
+				SLWR 		   <=	'1';
+				PKTEND 		<=	'1';
+--------------------------------------------------------------------------------
+				case state is
+--------------------------------------------------------------------------------
+					when IDLE =>
+						busy <=	'0';
+							if STARTRD = '1' then  	
+								state  	<= RCHECK;
+								column 	<= (others=>'0');
+								LRAD	 	<= (others=>'0');
+							end if;
+--------------------------------------------------------------------------------										
+					when RCHECK	=>					  		-- Check if READ module is readin data from USB			
+						if enable = '1' then		  		-- If not, send sync packet first
+							busy <= '1';  
+							state <= STATE1;
+						else							 		-- Else wait here and allow reading
+							busy <= '0';
+							state <= IDLE;
+						end if;
+--------------------------------------------------------------------------------										
+					when STATE1 =>										-- Check Full flag	
+						busy <= '0';
+						if bufferReady = '1' and enable = '1' then	 	-- 1 = Empty
+							timeout := 0;
+							busy <= '1';
+							state <= STATE2;
+						elsif timeout >= timeout_write then
+							timeout := 0;
+							state <= IDLE;
+						else
+							timeout := timeout+1;
+						end if;
+--------------------------------------------------------------------------------
+					when STATE2 =>				
+						j := j + 1;					
+						if j = (DELAY_LO + DELAY_HI) then
+							j 		:= 0;
+							SLWR 	<= '1';
+							state <= STATE3;
+						elsif j <= DELAY_LO then 
+							SLWR 	<= '0';
+						elsif j > DELAY_LO and j <= (DELAY_LO + DELAY_HI) then
+							SLWR 	<= '1';
+						end if;
+--------------------------------------------------------------------------------
+					when STATE3 =>									  	
+						if column = wordCount then 
+							column 	<= (others=>'0');
+							LRAD	 	<= (others=>'0');
+							done 		<= '1';
+							state		<= RD_DONE;			
+						else 
+							state 	<= STATE1;
+							LRAD		<= column;
+							column 	<= column + 1;		
+						end if;
+--------------------------------------------------------------------------------
+					when RD_DONE =>	
+						done 		<= '1';
+						if j = 3 then
+							j := 0;
+							state 	<= SYNC3;
+							NEXT_STATE <= IDLE;
+						else
+							j:= j + 1;
+						end if;	
+--------------------------------------------------------------------------------
+					when SYNC1 =>
+						sync 	<= '1';
+						if bufferReady = '1' and enable ='1' then	 
+							if j = DELAY_LO + DELAY_HI then
+								j 		:= 0;
+								SLWR 	<= '1';
+								state <= SYNC2;
+							elsif j <= DELAY_LO then 
+								SLWR 	<= '0';
+							elsif j > DELAY_LO and j <= (DELAY_LO + DELAY_HI) then
+								SLWR 	<= '1';
+							end if;
+						j := j + 1;
+						else
+							busy <= '0';
+						end if;
+--------------------------------------------------------------------------------
+					when SYNC2 =>
+						if LoHi = '0' then		-- LoHi = 0
+							LoHi 	<= '1';			--> LoHi = '1'
+							state <= SYNC1;
+						elsif LoHi = '1' then	-- LoHi = 1
+							LoHi 	<= '0';			--> LoHi = '1'
+							state <= SYNC3;
+						end if;
+--------------------------------------------------------------------------------	
+					when SYNC3 =>	-- PKTEND
+						if enable ='1' then
+							busy <='1';
+							if j = 7 then
+								PKTEND <= '1';
+								j := 0;
+								sync	<= '0';
+								state <= NEXT_STATE;						
+							elsif j > 3 then
+								PKTEND <= '1';
+								j := j + 1;
+							else
+								PKTEND <= '0';
+								j := j + 1;
+							end if;
+						else
+							busy <='0';
+						end if;
+						when others =>	state<=IDLE;																
+				end case;
+			end if;
+		end if;
+	end process;
+
+	--------------------------------------------------------------------------------	
+
+--------------------------------------------------------------------------------
+	process(clock)
+	begin
+		if rising_edge(clock) then
+			if (reset_z = '1') then
+				STARTRD <= '0';	
+			else
+				if start = '1' then
+					STARTRD <= '1';
+				else 
+					STARTRD <= '0';
+				end if;
+			end if;
+		end if;
+	end process;
+	
+
+end vhdl;

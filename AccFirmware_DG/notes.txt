@@ -1,0 +1,68 @@
+Note on Synchronizer.vhd
+
+Module pulseSync:
+
+It was stated in the comments that an assumption was made requiring the data to be stable 
+until the next valid pulse.
+
+This assumption can be less strict and specifically, the minimum data hold time from the rising edge 
+of din_valid (on the rising edge of input clock) is:
+
+T(data hold) = 1/2 input clock + 1 output clock
+
+This is the maximum time required from din_valid rising (and input data appearing)
+to the output clock clocking the data.
+If this timing is met then no registering of the data is required.
+
+If this timing is not met then 'data in' and 'valid in' must be registered.
+This would be done by latching them on the rising edge of i/p clock. (but latch data only when valid is high)
+Then the registered valid_in should be delayed another half an input clock to make sure that when o/p
+clock rises and latches the valid_out high, the data is present and correct.
+This will eliminate any data hold time requirement.
+
+
+
+Data hold calculations for the various transfers between clock domains:
+
+
+From usb clock (48MHz) to sys clock (40MHz):
+T hold(min) = 36ns = 2 usb clocks
+
+
+From sys clock (40MHz) to uart clock (160MHz):
+T hold(min) = 19ns = 1 sys clock
+
+
+From uart clock (160MHz) to sys clock (40MHz):
+T hold(min) = 29ns = 5 uart clocks
+
+
+From sys clock (40MHz) to usb clock (48MHz):
+T hold(min) = 34ns = 2 sys clocks
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

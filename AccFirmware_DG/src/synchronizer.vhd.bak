@@ -1,0 +1,138 @@
+---------------------------------------------------------------------------------
+-- Univ. of Chicago HEP / electronics design group
+--    -- + KICP 2015 --
+--
+-- PROJECT:      ACC
+-- FILE:         localCmdDelay.vhd
+-- AUTHOR:       D. Greenshields
+-- DATE:         June 2020
+--
+-- DESCRIPTION:  takes in trigger signals and valid signal and outputs the same but 
+--               with switchable delay
+--
+---------------------------------------------------------------------------------
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use work.defs.all;
+use work.components.all;
+
+
+entity localCmdDelay is
+	port (
+		reset						: 	in   	std_logic;
+		clock				      : 	in		std_logic;       
+      din_trigMask         :  in std_logic_vector(N-1 downto 0);
+      din_trigBin  	      :  in std_logic_vector(2 downto 0);
+      din_valid     	      :  in std_logic;
+      dout_trigMask 	      :  out std_logic_vector(N-1 downto 0);
+      dout_trigBin         :  out std_logic_vector(2 downto 0);
+      dout_valid     	   :  out std_logic;
+		delayEnable			   :	in	std_logic;
+		delayTime				:	in	natural);
+		
+end localCmdDelay;
+
+architecture vhdl of localCmdDelay is
+
+	
+	
+   
+   
+signal cmdReg  :  std_logic_vector(31 downto 0);
+   
+   
+	
+begin	
+
+
+
+
+CMD_DELAY: process(clock)
+variable timer: natural;
+variable done: boolean;
+begin
+   if (rising_edge(clock)) then
+      
+      if (reset = '1') then
+      
+         dout_trigMask <= X"00";
+         dout_trigBin  <= "000";
+         dout_valid    <= '0';
+         timer := 0;
+         
+      
+      elsif (delayEnable = '0') then
+         
+         dout_valid <= din_valid;
+        -- dout <= din;
+         timer := 0;
+      
+      
+      else
+         
+         done := false;
+
+         if (timer > 0) then        -- timer > 0 means valid in was detected previously and delay is in progress
+            
+            timer := timer - 1;     
+            if (timer = 0) then done := true; end if;            
+            
+            
+         elsif (din_valid = '1') then
+         
+            timer := delayTime;
+            
+            
+         end if;
+         
+          
+         if (done) then
+            
+            dout_valid <= '1';
+         --   dout <= cmdReg;      
+         
+         else
+         
+            dout_valid <= '0';         
+         
+         end if;
+         
+      end if;
+   end if;
+end process;
+
+
+
+
+			
+end vhdl;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,14 +1,20 @@
 #compilation files
 AccFirmware_DG/output_files/*
+#but keep the folder
+!AccFirmware_DG/output_files/.gitkeep 
 AccFirmware_DG/db/*
+!AccFirmware_DG/db/.gitkeep
 AccFirmware_DG/incremental_db/*
+!AccFirmware_DG/incremental_db/.gitkeep
 
 AcdcFirmware_DG/*.jic
 AcdcFirmware_DG/*.sof
 AcdcFirmware_DG/*.pof
 AcdcFirmware_DG/*.map
 AcdcFirmware_DG/db/*
+!AcdcFirmware_DG/db/.gitkeep
 AcdcFirmware_DG/incremental_db/*
+!AcdcFirmware_DG/incremental_db/.gitkeep
 
 #mac generated hidden files
 AcdcFirmware_DG/.DS_Store

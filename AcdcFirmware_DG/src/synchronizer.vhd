@@ -2,7 +2,7 @@
 -- Univ. of Chicago HEP / electronics design group
 --    -- + KICP 2015 --
 --
--- PROJECT:      ACC
+-- PROJECT:      ANNIE - ACDC
 -- FILE:         synchronizer.vhd
 -- AUTHOR:       D. Greenshields
 -- DATE:         June 2020

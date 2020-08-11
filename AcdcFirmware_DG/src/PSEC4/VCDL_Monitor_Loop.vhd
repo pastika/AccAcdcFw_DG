@@ -1,33 +1,25 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date:    13:44:23 11/07/2011 
--- Design Name: 
--- Module Name:    VCDL_Monitor_Loop - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
+---------------------------------------------------------------------------------
+-- Univ. of Chicago  
+--    
 --
--- Dependencies: 
+-- PROJECT:      ANNIE - ACDC
+-- FILE:         VCDL_Monitor_Loop.vhd
+-- AUTHOR:       D. Greenshields
+-- DATE:         July 2020
 --
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
+-- DESCRIPTION:  
 --
-----------------------------------------------------------------------------------
+--------------------------------------------------
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
+use work.defs.all;
+
 
 entity VCDL_Monitor_Loop is
      Port (
-             RESET_FEEDBACK      : in std_logic;
-             clock       			: in std_logic; --One period of this clock defines how long we count Wilkinson rate pulses
+             clock       			: in clock_type; --One period of this clock defines how long we count Wilkinson rate pulses
              VCDL_MONITOR_BIT    : in std_logic;
              countReg	 			: out natural
         );
@@ -41,10 +33,12 @@ architecture vhdl of VCDL_Monitor_Loop is
         signal count       : natural;
 begin
 
-        process(clock)
+        process(clock.sys)
         begin
-                if (rising_edge(clock)) then
-                        case state is
+               if (rising_edge(clock.sys)) then
+                    if (clock.dacUpdate = '1') then		-- slow update clock
+							
+								case state is
                                 when MONITORING =>
                                         countEnable <= '1';
                                         countReset  <= '0';
@@ -57,15 +51,15 @@ begin
                                         countEnable <= '0';
                                         countReset  <= '0';
                                         countReg <= count;
-                                        state <= CLEARING_AND_ADJUSTING;
-													
+                                        state <= CLEARING_AND_ADJUSTING;													
                                 when CLEARING_AND_ADJUSTING =>
                                         countEnable <= '0';
                                         countReset  <= '1';
                                         state <= MONITORING;
-                                when others =>
-                                        state <= MONITORING;
                         end case;
+								
+								
+						end if;
                 end if;
         end process;
 

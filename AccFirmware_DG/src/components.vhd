@@ -33,18 +33,20 @@ component pll is
 		refclk   : in  std_logic := '0'; --  refclk.clk
 		rst      : in  std_logic := '0'; --   reset.reset
 		outclk_0 : out std_logic;        -- outclk0.clk
-		outclk_1 : out std_logic         -- outclk1.clk
+		outclk_1 : out std_logic;        -- outclk1.clk
+		locked   : out std_logic         --  locked.export
 	);
 end component;
 	
 		
+
 		
 component ClockGenerator is
 	Port(
-		INCLK		: in	std_logic;		
-		CLK_SYS_4x	: out	std_logic;
-		CLK_SYS		: out	std_logic; 
-		clockOut_1Hz		: out	std_logic);		
+		clockIn		: in	clockSource_type;
+		clockCtrl	: out	clockCtrl_type;
+		clock			: buffer clock_type
+	);
 end component;
 		
 		
@@ -62,7 +64,14 @@ end component;
       
       
       
-      
+component LED_driver is
+	port (
+		clock	      : in std_logic;        
+		setup			: in ledSetup_type;
+		output      : out std_logic
+	);
+end component;
+     
       
       
       
@@ -83,19 +92,13 @@ component commandHandler is
 		rxBuffer_resetReq    :  out   std_logic;
 		timestamp_resetReq   :  out   std_logic;
 		globalResetReq       :  out   std_logic;
-      trigMode             :	out	std_logic;
-      trigDelay				:	out	std_logic_vector(6 downto 0);
-		trigSource				:	out	std_logic_vector(2 downto 0);
-		trigValid				:  out std_logic;
+      trigSetup            :	out	trigSetup_type;
 		softTrig            	:	out	std_logic_vector(N-1 downto 0);
 		softTrigBin 			:	out	std_logic_vector(2 downto 0);
       readMode             :	out	std_logic_vector(2 downto 0);
 		syncOut     			: 	out 	std_logic;
-		extCmd_enable       : 	out 	std_logic_vector(7 downto 0);
-		extCmd_data          : 	out	std_logic_vector(31 downto 0);
-		extCmd_valid		   : 	out	std_logic;
-		alignLvdsFlag			: out std_logic;
-	  waitForSys  			:	out	std_logic);
+		extCmd			      : 	out 	extCmd_type;
+		waitForSys  			:	out	std_logic);
 end component;
 
 
@@ -140,41 +143,29 @@ end component;
       
 component triggerAndTime is
 port(
-	sys_clock				:  in		std_logic;
+	clock						:  in		clock_type;
 	reset 					: 	in		std_logic;
-	xEXT_TRIGGER			:	in		std_logic;
-	xTRIG_CLK				: 	in		std_logic;
-	xUSB_DONE				:  in		std_logic;
-	xMODE						: 	in		std_logic;
-	xTRIG_DELAY				:  in		std_logic_vector(6 downto 0);
-	xSOFT_TRIG_IN			:  in		std_logic_vector(N-1 downto 0);
-	xCC_READ_MODE     	:  in		std_logic_vector(2 downto 0);
-	
-	xAUX_TRIG_0				:  in		std_logic;
-	xAUX_TRIG_1				:  in		std_logic;
-	xAUX_TRIG_2_DC			:	in		std_logic;
-	xAUX_TRIG_3_DC			: 	in		std_logic;
-	XACDC_WAITING			: 	in 	std_logic;
-	
-	xEVENT_AND_TIME_RESET:	in   	std_logic;
-	
-	xTRIG_FROM_FRONTEND	: 	in 	std_logic_vector(N-1 downto 0);
-	
-	
-	xTRIG_SOURCE      	: 	in 	std_logic_vector(2 downto 0);
-	xSLAVE_DEV_HARD_RESET : in 	std_logic;
-	xEXT_TRIG_VALID		: 	in 	std_logic;
-	xSOFT_TRIG_BIN			: 	in 	std_logic_vector(2 downto 0);
-	
-	xMASTERHI_SLAVELO		: 	in 	std_logic;
-	xFROM_SYSTEM_TRIGGER : 	in 	std_logic;
-	
-	xTRIG_OUT				:  out	std_logic_vector(N-1 downto 0);	
-	xSYSTEM_CLOCK_COUNTER:	out	std_logic_vector(47 downto 0);
-	xEVENT_COUNT			:	out	std_logic_vector(31 downto 0);
-	xCLOCKED_TRIG_OUT		: 	out 	std_logic;
+	extTrig					:	in		std_logic;
+	trigReset				:  in		std_logic;
+	trigSetup				: 	in		trigSetup_type;
+	trigToCount				:	out	std_logic;
+	SOFT_TRIG_IN			:  in		std_logic_vector(N-1 downto 0);
+	CC_READ_MODE   	  	:  in		std_logic_vector(2 downto 0);
+	AUX_TRIG_0				:  in		std_logic;
+	AUX_TRIG_1				:  in		std_logic;
+	AUX_TRIG_2_DC			:	in		std_logic;
+	AUX_TRIG_3_DC			: 	in		std_logic;
+	ACDC_WAITING			: 	in 	std_logic;	
+	EVENT_AND_TIME_RESET	:	in   	std_logic;
+	TRIG_FROM_FRONTEND	: 	in 	std_logic_vector(N-1 downto 0);	
+	SLAVE_DEV_HARD_RESET :  in 	std_logic;
+	SOFT_TRIG_BIN			: 	in 	std_logic_vector(2 downto 0);
+	MASTERHI_SLAVELO		: 	in 	std_logic;
+	FROM_SYSTEM_TRIGGER 	: 	in 	std_logic;
+	TRIG_OUT					:  out	std_logic_vector(N-1 downto 0);	
+	CLOCKED_TRIG_OUT		: 	out 	std_logic;
 	xBIN_COUNT				:  out   std_logic_vector(15 downto 0);
-	xAUX_TRIG_COUNTERS	:  out	std_logic_vector(15 downto 0));
+	AUX_TRIG_COUNTERS		:  out	std_logic_vector(15 downto 0));
 	
 end component;
       
@@ -224,6 +215,18 @@ component rx_data_ram
 end component;
 
 
+component systemTime_driver is port(
+
+	clock					: in 	clock_type;
+	reset					: in  std_logic;
+	trig					: in	std_logic;
+	eventAndTime_reset: in  std_logic;
+	systemTime			: buffer	std_logic_vector(47 downto 0);
+	timestamp			: out	timestamp_type;
+	eventCount			: buffer eventCount_type
+	
+);
+end component;
 
 
 component uart_rxBuffer is
@@ -250,8 +253,7 @@ component uart_comms_8bit IS
 	PORT
 	(
 		reset 				:  IN  STD_LOGIC;
-		uart_clock 			:  IN  STD_LOGIC;
-		sys_clock			:	IN  STD_LOGIC;
+		clock 				:  IN  clock_type;
 		txIn 					:  IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 		txIn_valid 			:  IN  STD_LOGIC;
 		txOut 				:  OUT STD_LOGIC;
@@ -275,10 +277,9 @@ END component;
 --------------------
 
 
-component usbTx is
+component usbTx_driver is
    port ( 	
-			usb_clock   : in		std_logic;   	--usb clock 48 Mhz
-			sys_clock   : in		std_logic;   	
+			clock   		: in		clock_type;
 			reset	      : in  	std_logic;	   --reset signal to usb block
 			txLockReq    	: in		std_logic;  
 			txLockAck    	: out		std_logic;  
@@ -298,10 +299,9 @@ end component;
 
 
 
-component usbRx is
+component usbRx_driver is
    port ( 
-		usb_clock		: in		std_logic;   	--usb clock 48 Mhz
-		sys_clock		: in		std_logic;   
+		clock   			: in		clock_type;
 		reset		      : in  	std_logic;	   --reset signal to usb block
 		din  		      : in     std_logic_vector (15 downto 0);  --usb data from PHY
       busReadEnable 	: out   	std_logic;     --when high disables drive to usb bus thus enabling reading

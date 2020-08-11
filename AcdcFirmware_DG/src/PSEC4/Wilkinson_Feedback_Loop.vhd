@@ -1,40 +1,27 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date:    13:44:23 11/07/2011 
--- Design Name: 
--- Module Name:    Wilkinson_Feedback_Loop - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
+---------------------------------------------------------------------------------
+-- Univ. of Chicago  
+--    
 --
--- Dependencies: 
+-- PROJECT:      ANNIE - ACDC
+-- FILE:         Wilkinson_feedback_loop.vhd
+-- AUTHOR:       D. Greenshields
+-- DATE:         July 2020
 --
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
---
-----------------------------------------------------------------------------------
+-- DESCRIPTION:  
+---------------------------------------------------------------------------------
+
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
+use work.defs.all;
 
--- Uncomment the following library declaration if instantiating
--- any Xilinx primitives in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
+
 
 entity Wilkinson_Feedback_Loop is
         Port (
-        ENABLE_FEEDBACK     : in std_logic;
-        RESET_FEEDBACK      : in std_logic;
-        REFRESH_CLOCK       : in std_logic; --One period of this clock defines how long we count Wilkinson rate pulses
-        DAC_SYNC_CLOCK      : in std_logic; --This clock should be the same that is used for setting DACs, and should be used to avoid race conditions on setting the desired DAC values
+        reset    				: in std_logic;
+        clock			       : in clock_type; --One period of clock.wilkUpdate defines how long we count Wilkinson rate pulses
         WILK_MONITOR_BIT    : in std_logic;
         DESIRED_COUNT_VALUE : in natural range 0 to 65535;
         CURRENT_COUNT_VALUE : out natural range 0 to 65535;
@@ -54,12 +41,14 @@ architecture Behavioral of Wilkinson_Feedback_Loop is
 begin
         CURRENT_COUNT_VALUE <= internal_COUNTER_VALUE_LATCHED;
 
-        process(REFRESH_CLOCK)
+        process(clock.sys)
                 constant INITIAL_DAC_VALUE : natural range 0 to 4095:= 16#820#; --x7D0 = 2000
                 constant MINIMUM_DAC_VALUE : natural range 0 to 4095:= 16#400#; --x320 = 800
                 constant MAXIMUM_DAC_VALUE : natural range 0 to 4095:= 16#999#; --xFFF = 4095
         begin
-                if (rising_edge(REFRESH_CLOCK)) then
+                if (rising_edge(clock.sys)) then
+						if (clock.wilkUpdate = '1') then
+						
                         case internal_STATE is
                                 when MONITORING =>
                                         internal_DESIRED_DAC_VALUE_VALID <= '1';
@@ -82,7 +71,7 @@ begin
                                         internal_DESIRED_DAC_VALUE_VALID <= '0';
                                         internal_COUNTER_ENABLE <= '0';
                                         internal_COUNTER_CLEAR  <= '1';
-                                        if (ENABLE_FEEDBACK = '0') then
+                                        if (reset = '1') then
                                                 internal_DESIRED_DAC_VALUE <= INITIAL_DAC_VALUE;
                                         else
                                                 if ( internal_COUNTER_VALUE_LATCHED > DESIRED_COUNT_VALUE + 2 ) then
@@ -99,6 +88,7 @@ begin
                                 when others =>
                                         internal_STATE <= MONITORING;
                         end case;
+							end if;
                 end if;
         end process;
 
@@ -111,8 +101,8 @@ begin
                 end if;
         end process;
 
-        process(DAC_SYNC_CLOCK) begin
-                if (rising_edge(DAC_SYNC_CLOCK)) then
+        process(clock.sys) begin
+                if (rising_edge(clock.sys)) then
                         if (internal_DESIRED_DAC_VALUE_VALID = '1') then
                                         DESIRED_DAC_VALUE <= internal_DESIRED_DAC_VALUE;
                         end if;

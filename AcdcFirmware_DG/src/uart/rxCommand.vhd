@@ -2,13 +2,13 @@
 -- Univ. of Chicago  
 --    
 --
--- PROJECT:      ANNIE 
+-- PROJECT:      ANNIE - ACDC
 -- FILE:         rxCommand.vhd
 -- AUTHOR:       D. Greenshields
 -- DATE:         July 2020
 --
 -- DESCRIPTION:  receives 6 byte frames from the uart, 
---						with 2 header bytes and 4 instruction bytes
+--						(2 header bytes and 4 instruction bytes)
 --						processing done with uart clock, i/o on system clock
 --
 ---------------------------------------------------------------------------------

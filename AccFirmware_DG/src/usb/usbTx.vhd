@@ -21,10 +21,9 @@ use work.components.pulseSync;
 
 
 
-entity usbTx is
+entity usbTx_driver is
    port ( 	
-			usb_clock   : in		std_logic;   	--usb clock 48 Mhz
-			sys_clock   : in		std_logic;   	
+			clock   		: in		clock_type;
 			reset	      : in  	std_logic;	   --reset signal to usb block
 			txLockReq  	: in		std_logic;  -- request to lock the bus in tx mode, preventing any interruptions from usb read
 			txLockAck  	: out		std_logic;  
@@ -40,11 +39,11 @@ entity usbTx is
          txBusy  		: out 	std_logic;     --usb write-busy indicator (not a PHY pin)
 			dout 			: out    std_logic_vector (15 downto 0);  --usb data bus to PHY
          timeoutError: out    std_logic);
-	end usbTx;
+	end usbTx_driver;
 
 	
 	
-architecture vhdl of usbTx is
+architecture vhdl of usbTx_driver is
 
 --  _z suffix indicates usb clocked signal	
 	signal 	reset_z:	std_logic;	-- reset signal synchronized with IFCLK
@@ -56,6 +55,7 @@ architecture vhdl of usbTx is
    signal   timeoutError_z: std_logic;
 	signal   busy: std_logic;
 	signal   busWriteEnable: std_logic_vector(15 downto 0);
+   signal	bufferReady_z: std_logic;
    
    
    type  state_type is (
@@ -98,14 +98,14 @@ architecture vhdl of usbTx is
 -- Write: safer to make it low 4/ high 5 clocks to account for pcb delay, fpga delay
 -- Pkt end: safer to make it low 4/ high 4 clocks to account for pcb delay, fpga delay
 
--- use synchronous write: 1 clock SLWR low, 1 clock SLWR high
+-- use synchronous write: 1 clock SLWR low, 1 clock SLWR high; but set SLWR high to 2 cycles min to make sure bufferReady_z has time to go low if buffer is full
 -- use asynchronous packet end: 4 clocks low, 4 clocks high
 
 
 
 	-- timing constants (number of clock cycles)
-	constant    timing_SLWR_LOW: natural:= 1; --4
-	constant    timing_SLWR_HIGH: natural:= 1;  --5
+	constant    timing_SLWR_LOW: natural:= 4; --4
+	constant    timing_SLWR_HIGH: natural:= 5;  --5
 	constant    timing_PKTEND_LOW: natural:= 4; 
 	constant    timing_PKTEND_HIGH: natural:= 4; 
 	
@@ -119,10 +119,10 @@ begin
 txBusy <= busy;
 
 -- transfer inputs to usb clock
-SYNC0: pulseSync port map (sys_clock, usb_clock, din_valid, din_valid_z);
+SYNC0: pulseSync port map (clock.sys, clock.usb, din_valid, din_valid_z);
 
 -- transfer output to sys clock
-SYNC1: pulseSync port map (usb_clock, sys_clock, txAck_z, txAck);
+SYNC1: pulseSync port map (clock.usb, clock.sys, txAck_z, txAck);
 
 
 -- before data can be applied to the module, txLockReq must be raised 
@@ -135,15 +135,16 @@ SYNC1: pulseSync port map (usb_clock, sys_clock, txAck_z, txAck);
 ---------------------------------------------------------------------------------
 --USB write to PC
 ---------------------------------------------------------------------------------
-proc_usb_write : process(usb_clock)
+proc_usb_write : process(clock.usb)
 variable t: natural;
 variable cyc: natural;
 	begin
-		if (rising_edge(usb_clock)) then
+		if (rising_edge(clock.usb)) then
 		
 			-- sync
 			reset_z <= reset;
 			txLockReq_z <= txLockReq;
+         bufferReady_z <= bufferReady;
          
 			
 			if (reset_z = '1') then	-- active high
@@ -173,7 +174,7 @@ variable cyc: natural;
                   
                when BUFFER_WAIT => -- wait until chip is ready to accept data
                   txAck_z <= '0';
-                  if (bufferReady = '1') then
+                  if (bufferReady_z = '1') then
                      txReady_z <= '1';      -- signal to the external module to start sending data
                      state <= DATA_WAIT;
                   end if;                    
@@ -270,15 +271,15 @@ variable cyc: natural;
 ------------------------------------
 --	SYNC OUTPUTS TO SYS CLOCK
 ------------------------------------
-SYNC_OUTPUTS: process(sys_clock)
+SYNC_OUTPUTS: process(clock.sys)
 begin
-   if (rising_edge(sys_clock)) then
+   if (rising_edge(clock.sys)) then
       txLockAck <= busy;
       txReady <= txReady_z;
    end if;
 end process;
    
-TIMEOUT_SYNC: pulseSync port map (usb_clock, sys_clock, timeoutError_z, timeoutError);
+TIMEOUT_SYNC: pulseSync port map (clock.usb, clock.sys, timeoutError_z, timeoutError);
 
 
    

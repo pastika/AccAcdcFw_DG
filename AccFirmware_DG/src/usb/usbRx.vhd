@@ -30,10 +30,9 @@ use work.components.pulseSync;
 
 
 
-entity usbRx is
+entity usbRx_driver is
    port ( 
-		usb_clock		: in		std_logic;   	--usb clock 48 Mhz
-		sys_clock		: in		std_logic;   
+		clock				: in		clock_type;
 		reset		      : in  	std_logic;	   --reset signal to usb block
 		din  		      : in     std_logic_vector (15 downto 0);  --usb data from PHY
       busReadEnable 	: out   	std_logic;     --when high disables drive to usb bus thus enabling reading
@@ -46,17 +45,18 @@ entity usbRx is
       dout           : out   	std_logic_vector(31 downto 0);
 		dout_valid     : out		std_logic;						
       timeoutError   : out    std_logic);
-      end usbRx;
+      end usbRx_driver;
 
 	
 	
-architecture vhdl of usbRx is
+architecture vhdl of usbRx_driver is
 
 	
 	signal 	reset_z:	std_logic;	-- reset signal synchronized with IFCLK
 	signal 	timeoutError_z:	std_logic;	
    signal   usb_dout           : std_logic_vector(31 downto 0); -- 32 bit word constructed from two received 16 bit words
    signal   usb_dout_valid     : std_logic;	-- goes high for one (usb clock) pulse to indicate valid data	
+	signal	dataAvailable_z : std_logic;
 	
 	
 	constant    timeoutValue: natural:= 48000000; --  = 1 sec @ 48MHz clock
@@ -65,7 +65,7 @@ architecture vhdl of usbRx is
 	
 	-- timing constants (number of clock cycles)
 	constant    timing_SLRD_LOW: natural:= 4; 
-	constant    timing_SLRD_HIGH: natural:= 4; 
+	constant    timing_SLRD_HIGH: natural:= 4; -- as well as meeting datasheet timing, this also gives a couple of clocks to allow dataAvailable_z to go low
 	constant 	holdoffTime: natural:= 0;		-- number of clocks to wait between instructions. Gives time to process instruction
 	
    
@@ -78,7 +78,7 @@ begin
 ---------------------------------------------------------------------------------
 --USB read from PC
 ---------------------------------------------------------------------------------
-proc_usb_read : process(usb_clock)
+proc_usb_read : process(clock.usb)
 variable isLower: boolean; -- flag to say this is the lower 16 bits of the command word (bits 15 to 0)
 variable holdoff: natural; -- a timer to ensure a minimum number of clock cycles between successive received 32-bit instruction words (if needed)
 variable t: natural; -- a timeout timer
@@ -87,10 +87,11 @@ variable state: state_type;
 variable error: boolean;   --error flag
 variable cyc: natural;
 	begin
-		if rising_edge(usb_clock) then
+		if rising_edge(clock.usb) then
 			
          -- synchronize the reset signal, as it comes from the system clock
          reset_z <= reset;
+         dataAvailable_z <= dataAvailable;
          
          
          if (reset_z = '1') then
@@ -124,7 +125,7 @@ variable cyc: natural;
                when RD_WAIT =>	-- check if read data available and bus is available for reading
                   usb_dout_valid <= '0';
                   
-                  if (dataAvailable = '1' and enable = '1' and holdoff = 0) then	-- flagA = rx data available
+                  if (dataAvailable_z = '1' and enable = '1' and holdoff = 0) then	-- flagA = rx data available
 							busy <= '1';   -- flag to the tx driver that the bus is not available
 							cyc := 0;
 							busReadEnable <= '1';   -- disable acc bus drive to allow reading from usb chip; 
@@ -202,11 +203,11 @@ variable cyc: natural;
 ------------------------------------
 -- transfer the valid signal to the system clock
 -- (data should not need syncing as it shouldn't be changing)
-VALID_SYNC: pulseSync port map (usb_clock, sys_clock, usb_dout_valid, dout_valid);
+VALID_SYNC: pulseSync port map (clock.usb, clock.sys, usb_dout_valid, dout_valid);
 dout <= usb_dout;
 
    
-TIMEOUT_SYNC: pulseSync port map (usb_clock, sys_clock, timeoutError_z, timeoutError);
+TIMEOUT_SYNC: pulseSync port map (clock.usb, clock.sys, timeoutError_z, timeoutError);
    
 
   

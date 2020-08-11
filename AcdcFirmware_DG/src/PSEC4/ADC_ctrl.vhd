@@ -1,11 +1,14 @@
---------------------------------------------------
--- University of Chicago
--- LAPPD system firmware
---------------------------------------------------
--- module		: 	WilkinsonCtrlLoop,vhd
--- author		: 	D. Greenshields
--- date			: 	July 2020
--- description	:  Wilkinson control loop
+---------------------------------------------------------------------------------
+-- Univ. of Chicago  
+--    
+--
+-- PROJECT:      ANNIE - ACDC
+-- FILE:         ADC_ctrl.vhd
+-- AUTHOR:       D. Greenshields
+-- DATE:         July 2020
+--
+-- DESCRIPTION:  
+--
 --------------------------------------------------
 
 library IEEE;
@@ -13,29 +16,25 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 use work.defs.all;
-use work.components.Wilkinson_Feedback_Loop;
 
 
 entity ADC_Ctrl is 
 	port(
-		sysClock			:	in		std_logic;			--40MHz	
-		updateClock		:	in		std_logic;			--10Hz	
-		reset				:	in		std_logic;
-		trigFlag			:	in		std_logic;
-		RO_EN 			:	out	std_logic;
-		adcClear			:	out	std_logic;
-		adcLatch			:	out	std_logic
+		clock			:	in		std_logic;			--40MHz	
+		reset			:	in		std_logic;
+		start			:	in		std_logic;
+		RO_EN 		:	out	std_logic;
+		adcClear		:	out	std_logic;
+		adcLatch		:	out	std_logic;
+		rampStart	:	out	std_logic;
+		rampDone		:	out	std_logic
 );
 end ADC_Ctrl;
 
 architecture vhdl of ADC_Ctrl is
 	
-	type state_type is (INIT,  RAMPING, EXTLATCH_RISE, EXTLATCH_FALL,  RAMPDONE);
-	signal state	:	state_type;
 	
-	signal 	RAMP			:	std_logic := '1';
 	signal 	RAMP_CNT		:	std_logic_vector(10 downto 0); --:= b"00000000000";
-	signal 	RAMP_DONE	:	std_logic;
 
 
 begin
@@ -44,37 +43,46 @@ begin
 ----------------------------------------------------------------
 --PSEC-4 WILK. ADC CONTROL
 ---------------------------------------------------------------- 		
-process(sysClock)
+process(clock)
 variable i : integer range 50 downto 0;
+type state_type is (INIT,  RAMPING, EXTLATCH_RISE, EXTLATCH_FALL,  RAMP_DONE);
+variable state	:	state_type;
+variable startFlag: boolean;
 begin
-	if (falling_edge(sysClock)) then
+	if (falling_edge(clock)) then
 		
 		if (reset = '1') then 
 			
-			RAMP 			<= '0';
-			RAMP_DONE 	<= '0';
+			RAMPStart	<= '0';
+			rampDone 	<= '0';
 			RAMP_CNT 	<= (others => '0');
-			state			<= INIT;
+			state			:= INIT;
 			adcClear 	<= '1';
 			adcLatch 	<= '0'; --latch follows trigger for now
 			i 				:= 0;
 			RO_EN 		<= '0';
+			startFlag := false;
 
-		elsif (trigFlag = '1')  then 
+		else
+		
+			if (start = '1')  then startFlag := true; end if;		-- latch the start flag
+				
 		
 			case state is
 				
 				-------------------------						
 				when INIT =>
 				
-					i	:= i+1;   -- some setup time
-					adcLatch <= '1';
-					RO_EN 	<= '1';
-					RAMP 		<= '1';
-					if i = 12 then
-						i	:= 0;
-						RAMP 			<= '0';
-						state	<= RAMPING;
+					if (startFlag) then
+						i	:= i+1;   -- some setup time
+						adcLatch <= '1';
+						RO_EN 	<= '1';
+						RAMPStart <= '1';
+						if i = 12 then
+							i	:= 0;
+							RAMPStart	<= '0';
+							state	:= RAMPING;
+						end if;
 					end if;
 					
 				-------------------------	
@@ -84,7 +92,7 @@ begin
 					if RAMP_CNT = WILKRAMPCOUNT then  --set ramp length w.r.t. clock
 						RAMP_CNT 	<= (others => '0');
 							RO_EN 		<='0';
-						state 	<= EXTLATCH_RISE;
+						state 	:= EXTLATCH_RISE;
 					end if;
 			
 				-------------------------
@@ -92,7 +100,7 @@ begin
 					i 	:= i+1;
 					if i = 1 then
 						i	:= 0;
-						state	<= EXTLATCH_FALL;
+						state	:= EXTLATCH_FALL;
 					end if;
 					
 				
@@ -100,12 +108,12 @@ begin
 					i	:= i+1;
 					if i = 1  then	
 						i	:= 0;
-						state <= RAMPDONE;
+						state := RAMP_DONE;
 					end if;
 
 				-------------------------
-				when RAMPDONE =>
-					RAMP_DONE 	<= '1';
+				when RAMP_DONE =>
+					rampDone 	<= '1';
 			
 			end case;
 		end if;

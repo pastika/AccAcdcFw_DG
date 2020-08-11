@@ -48,7 +48,7 @@ begin
 --	LED CTRL
 ------------------------------------
 
-LED_edge_detect: process(setup.input)		-- edge detect used for monostable mode (in case i/p is on a different clock)
+LED_edge_detect: process(latchReset, setup.input)		-- edge detect used for monostable mode (in case i/p is on a different clock)
 begin
 	if (latchReset = '1') then 
 		latch <= '0';
@@ -83,7 +83,7 @@ begin
 						
 			when ledMode.flashing =>			
 
-				if (t_flash >= setup.onTime) then
+				if (t_flash < setup.onTime) then
 					state <= input_z; 
 				else
 					state <= '0';
@@ -114,8 +114,7 @@ begin
 		end case;
 			
 			
-		-- leds are inverted, so invert the signal to the output pin
-		output <= not state; 
+		output <= state; 
 			
 			
 	elsif (falling_edge(clock)) then

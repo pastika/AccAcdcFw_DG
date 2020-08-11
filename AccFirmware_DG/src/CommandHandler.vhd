@@ -30,18 +30,12 @@ entity commandHandler is
 		rxBuffer_resetReq    :  out   std_logic;
 		timestamp_resetReq   :  out   std_logic;
 		globalResetReq       :  out   std_logic;
-      trigMode             :	out	std_logic;
-      trigDelay				:	out	std_logic_vector(6 downto 0);
-		trigSource				:	out	std_logic_vector(2 downto 0);
-		trigValid            :  out   std_logic;
+      trigSetup            :	out	trigSetup_type;
       softTrig           	:	out	std_logic_vector(N-1 downto 0);
 		softTrigBin 			:	out	std_logic_vector(2 downto 0);
       readMode             :	out	std_logic_vector(2 downto 0);
 		syncOut              :  out   std_logic;
-		extCmd_enable        : 	out 	std_logic_vector(7 downto 0);
-		extCmd_data          : 	out	std_logic_vector(31 downto 0);
-		extCmd_valid		   : 	out	std_logic;
-      alignLvdsFlag        :  out   std_logic;
+		extCmd			      : 	out 	extCmd_type;
       waitForSys  			:	out	std_logic);
 end commandHandler;
 
@@ -88,12 +82,11 @@ begin
 			softTrig_new	<= X"00";
 			softTrigBin_new  	<= "000";
 			cmdOut_valid     	<= '0';	
-         trigMode		   <= '0';
-			trigDelay   	<= "0000000";
-         trigValid      <= '0';
+         trigSetup.mode	   <= '0';
+			trigSetup.delay 	<= "0000000";
+         trigSetup.valid   <= '0';
          readMode 		<= "000";
 			globalResetReq <= '0';
-         alignLvdsFlag  <= '1';
          sync     	   <= '0';
          timestamp_resetReq<= '0';
          rxBuffer_resetReq	<= '0';
@@ -121,9 +114,6 @@ begin
 					softTrig_new <= x"0" & din(3 downto 0);
 					softTrigBin_new	<= din(6 downto 4);
 
--------------------------------------------------------------------------         
-				when x"D" => alignLvdsFlag  <= '1';
-         
 -------------------------------------------------------------------------                  
 				when x"C" =>   --READ MODE & TRIG MODE
 					readMode <= din(2 downto 0);               
@@ -137,16 +127,16 @@ begin
                 
                -- set trig parameters
                if din(4) = '1' then
-						trigMode <= din(3);
-						trigDelay <= din(11 downto 5);
-						trigSource <= din(14 downto 12);
+						trigSetup.mode <= din(3);
+						trigSetup.delay <= din(11 downto 5);
+						trigSetup.source <= din(14 downto 12);
 					end if;
                
 -------------------------------------------------------------------------                  
 				when x"B" =>
                if din(2) = '1' then
 						newLocalCmd <= '1';
-                  trigValid <= din(1);
+                  trigSetup.valid <= din(1);
                   passCmdOn := true;
 					elsif din(4) = '1' then
                   sync <= din(3);
@@ -158,10 +148,7 @@ begin
 -------------------------------------------------------------------------                  		
 				when x"4" =>
 					--reset 
-					case din(11 downto 0) is
-                  when x"FFF" => globalResetReq <= '1'; alignLvdsFlag <= '1';
-                  when others => alignLvdsFlag <= '0';
-               end case;
+					if (din(11 downto 0) = x"FFF") then globalResetReq <= '1'; end if;
 					
                case din(15 downto 12) is
 						when x"1" => timestamp_resetReq <= '1';
@@ -217,7 +204,7 @@ begin
       if (reset = '1') then
       
          state := 0;
-         extCmd_valid <= '0';
+         extCmd.valid <= '0';
          
       else
       
@@ -225,7 +212,7 @@ begin
             
             when 0 =>      -- wait for new external command
             
-               extCmd_valid <= '0';
+               extCmd.valid <= '0';
                if (cmdOut_valid = '1') then
                   cmd_reg <= cmdOut;
                   cmd_enable <= x"0" & cmdOut(28 downto 25);
@@ -236,9 +223,9 @@ begin
             when 1 =>      -- wait for sync low, then output instruction to external board via uart tx
             
                if (sync = '0') then
-                  extCmd_data <= cmd_reg;
-                  extCmd_valid <= '1';
-                  extCmd_enable <= cmd_enable;
+                  extCmd.data <= cmd_reg;
+                  extCmd.valid <= '1';
+                  extCmd.enable <= cmd_enable;
                   state := 0;
                end if;
              

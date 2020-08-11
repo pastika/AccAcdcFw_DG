@@ -2,12 +2,13 @@
 -- Univ. of Chicago  
 --    --KICP--
 --
--- PROJECT:      ANNIE
--- FILE:         clock_manager.vhd
+-- PROJECT:      ANNIE - ACDC
+-- FILE:         clockGenerator.vhd
 -- AUTHOR:       D. Greenshields
--- DATE:         June 2020
+-- DATE:         July 2020
 --
--- DESCRIPTION:  clock generator
+-- DESCRIPTION:  generates different clock frequencies for the firmware using
+-- 					an on-board pll and also an external jitter cleaning pll
 --
 ---------------------------------------------------------------------------------
 
@@ -21,11 +22,10 @@ use work.defs.all;
 
 entity ClockGenerator is
 	Port(
-		reset			:	in		std_logic;
-		clockIn		: 	in 	clockSource_type;				
-		jcpll			:	out 	jcpll_ctrl_type;
-		altpllLock	:	out	std_logic;
-		clock			: 	out 	clock_type
+		reset			:	in			std_logic;
+		clockIn		: 	in 		clockSource_type;				
+		jcpll			:	out 		jcpll_ctrl_type;
+		clock			: 	buffer	clock_type
 	);		
 end ClockGenerator;
 
@@ -36,7 +36,7 @@ architecture vhdl of ClockGenerator is
 -- constants 
 -- set depending on osc frequency
 constant TIMER_CLK_DIV_RATIO: natural:= 40000;	-- 40MHz / 40000 = 1kHz
-constant SERIAL_CLK_DIV_RATIO: natural:= 1000;	-- 40MHz / 200 = 200kHz	(exact freq is not too critical)
+constant SERIAL_CLK_DIV_RATIO: natural:= 1000;	-- 40MHz / 1000 = 40kHz	(exact freq is not too critical)
 
 
 
@@ -47,22 +47,24 @@ constant SERIAL_CLK_DIV_RATIO: natural:= 1000;	-- 40MHz / 200 = 200kHz	(exact fr
 -------------------------------------------------------------------------------
 -- SIGNALS 
 -------------------------------------------------------------------------------
-	signal STATE          : STATE_TYPE;
-	
+	signal STATE          : STATE_TYPE;	
 	signal DIN	  			: std_logic	:= '0';
 	signal S_EN	  			: std_logic	:=	'0';
 	signal PWR_DWN	  		: std_logic	:= '1';
 	signal PLL_RST	  		: std_logic	:= '1';
 	signal RAM_SEL			: std_logic_vector(3 downto 0) := x"F";
 	signal xRAM				: std_logic_vector(31 downto 0);
-	
-	signal	serialClock	: std_logic;
-	
+	signal	serialClock	: std_logic;	
 	signal	reset_z		: std_logic;
-	
+	signal	dacUpdate_z	: std_logic;
+	signal	wilkUpdate_z	: std_logic;
 	
 begin
 
+
+
+
+clock.usb <= clockIn.usb_IFCLK;
 
 
 
@@ -71,11 +73,11 @@ begin
 PLL_MAP : pll port map
 (
 
-	inclk0	=>		clockIn.localOsc, 
+	inclk0	=>		clockIn.jcpll, 
 	c0			=>		clock.sys, 		--	40MHz
 	c1			=>		clock.uart,		-- 160MHz
 	c2			=>		clock.trig,		-- 320MHz
-	locked	=>		altpllLock
+	locked	=>		clock.altpllLock
 );     
 				
 
@@ -85,7 +87,7 @@ PLL_MAP : pll port map
 ---------------------------------------
 -- TIMER CLOCK GENERATOR
 ---------------------------------------
--- a general purpose 1ms clock for use in timers and delays, timeouts etc. Not dependent on the jitter cleaner being set up
+-- a general purpose 1ms clock for use in timers, delays, led flashers, timeouts etc. Not dependent on the jitter cleaner being set up
 CLK_DIV_TIMER: process(clockIn.localOsc)
 variable t: natural range 0 to 262143;
 begin
@@ -104,11 +106,59 @@ end process;
 	
 	
 	
+	
 ---------------------------------------
--- SERIAL CLOCK GENERATOR
+-- DAC UPDATE CLOCK GENERATOR
 ---------------------------------------
--- used to program the jitter cleaner (spi clock)
-CLK_DIV_SERIAL: process(clockIn.localOsc)
+DAC_CLK_GEN: process(clock.timer)
+variable t: natural;
+begin
+	if (rising_edge(clock.timer)) then
+		t := t + 1;
+		if (t >= 100) then 	-- 100ms cycle time = 10Hz
+			dacUpdate_z <= '1'; t := 0; 	
+		else
+			dacUpdate_z <= '0';
+		end if;	
+	end if;
+end process;
+
+-- synchronize the clock pulse to sys clock
+DAC_CLK_SYNC: pulseSync port map (clock.timer, clock.sys, dacUpdate_z, clock.dacUpdate);
+	
+	
+	
+	
+	
+---------------------------------------
+-- WILKINSON UPDATE CLOCK GENERATOR
+---------------------------------------
+WILK_CLK_GEN: process(clock.timer)
+variable t: natural;
+begin
+	if (rising_edge(clock.timer)) then
+		t := t + 1;
+		if (t >= 100) then 	-- 100ms cycle time = 10Hz
+			wilkUpdate_z <= '1'; t := 0; 	
+		else
+			wilkUpdate_z <= '0';
+		end if;	
+	end if;
+end process;
+
+-- synchronize the clock pulse to sys clock
+WILK_CLK_SYNC: pulseSync port map (clock.timer, clock.sys, wilkUpdate_z, clock.wilkUpdate);
+	
+	
+	
+	
+	
+	
+	
+---------------------------------------
+-- JITTER CLEANER PROGRAMMING CLOCK GENERATOR
+---------------------------------------
+CLK_DIV_SERIAL: process(clockIn.localOsc)		
 variable t: natural range 0 to 65535;
 begin
 	if (rising_edge(clockIn.localOsc)) then
@@ -121,7 +171,7 @@ end process;
 	
 	
 	
-	
+
 	
 ---------------------------------------
 -- JITTER CLEANER CONTROLLER	
@@ -162,21 +212,23 @@ end process;
 
 	process(serialClock)
 	variable i	: natural;
+	variable t: natural := 0;
 	begin
 		if (falling_edge(serialClock)) then
 		
 		
-			reset_z <= reset;
 			
 		
-			if (reset_z = '1') then
+			if (t < 40000) then 
 			
 				DIN 		<= '0';
 				S_EN 		<= '0';
 				PWR_DWN 	<= '1';
 				PLL_RST 	<= '1';
 				RAM_SEL <= x"F";
-				STATE	<= PWR_UP;			
+				STATE	<= PWR_UP;		
+				t := t + 1;	
+				
 		
 			else
 			

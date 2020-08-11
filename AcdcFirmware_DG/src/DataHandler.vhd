@@ -24,25 +24,20 @@ use work.components.pulseSync;
 entity dataHandler is
 	port (
 		reset						: 	in   	std_logic;
-		sys_clock				: 	in		std_logic;        
-		uart_clock				: 	in		std_logic;        
+		clock						: 	in		clock_type;        
 		info						:  in 	info_type;
+      IDrequest				:	in		std_logic;
       readRequest				:	in		std_logic;
-      readDone					:	out	std_logic;
+      uartTx_done				:	out	std_logic;
 		selfTrigRateCount		:	in 	rate_count_array;
-		
-      -- rx buffer ram signals
-      ramAddress           :  out   std_logic_vector(RAM_ADR_SIZE-1 downto 0);
+      ramAddress           :  out   natural;
       ramData              :  in    wordArray;
-      
-      -- uart tx signals
       txByte	            : 	out	std_logic_vector(7 downto 0);
 		txByte_valid	 	   : 	out	std_logic;
       txByte_ack           : 	in 	std_logic; -- a pulse input which shows that the data was sent to the uart
       txReady              : 	in 	std_logic; -- uart tx is ready for valid data
-      
-      -- error
-      timeoutError  			:	out	std_logic
+      timeoutError  			:	out	std_logic;
+		testMode					:	in		testMode_type
 );
 end dataHandler;
 
@@ -59,20 +54,28 @@ type state_type is (
    
    
    
+constant	IDframe_len: natural:= 32;
 
+
+type frameData_type is array (0 to 31) of std_logic_vector(15 downto 0);
+
+signal IDframe_data: frameData_type;
 
 signal txReady_z: std_logic;
 signal txByte_valid_z:  std_logic;
 signal txByte_ack_z:  std_logic;
-signal address: natural;
   
-	
+  
+signal dataEnable: std_logic;	
+signal dataReset: std_logic;	
 	
 begin	
 	
 
+	
+	
+
                
-ramAddress <= std_logic_vector(to_unsigned(address,14));
 
 
 
@@ -80,34 +83,37 @@ ramAddress <= std_logic_vector(to_unsigned(address,14));
 
 
 -- synchronize valid output to uart clock
-SYNC0: pulseSync port map (sys_clock, uart_clock, txByte_valid_z, txByte_valid);
+SYNC0: pulseSync port map (clock.sys, clock.uart, txByte_valid_z, txByte_valid);
 
 -- synchronize data ack input to sys clock
-SYNC1: pulseSync port map (uart_clock, sys_clock, txByte_ack, txByte_ack_z);
+SYNC1: pulseSync port map (clock.uart, clock.sys, txByte_ack, txByte_ack_z);
 
 
    
    
-DATA_HANDLER: process(sys_clock)
+DATA_HANDLER: process(clock.sys)
 variable state: state_type;
 variable t: natural; -- timeout value 
-variable i: natural range 0 to 1600;  -- index of the current data word
+variable i: natural range 0 to 65535;  -- index of the current data word
 variable txWord: std_logic_vector(15 downto 0);
 variable bytesDone: natural;
 
 -- flags to show the progress of the transmission
 variable SOF_done: boolean;				-- start of frame
-variable channelsDone: natural range 0 to 7;
+variable Psec4sDone: natural range 0 to 7;
 variable preambleDone: boolean;
 variable psecDataDone: boolean;
 variable trigDone: boolean;
 variable frameDone: boolean;
 
 
+type frame_type_type is (PSEC_DATA_FRAME, ID_FRAME);
+variable frame_type: frame_type_type;
+
 
 
 begin
-	if (rising_edge(sys_clock)) then
+	if (rising_edge(clock.sys)) then
 	
 		-- sync
 		txReady_z <= txReady;
@@ -118,7 +124,8 @@ begin
 			
 			state := WAIT_FOR_REQUEST;
 			txByte_valid_z <= '0';
-         
+         uartTx_done <= '0';
+			
 			
 		else
 		
@@ -128,15 +135,23 @@ begin
          
 				when WAIT_FOR_REQUEST => 
 			             
-					readDone <= '0';
+					uartTx_done <= '0';
 					txByte_valid_z <= '0';
-					if (readRequest = '1') then 
+					if (IDrequest = '1') then 
+						frame_type := ID_FRAME;
 						i := 0;
 						t := 0;
-						address <= 0;
+						timeoutError <= '0';
+						frameDone := false;
+						state := GET_DATA;
+					elsif (readRequest = '1') then 
+						frame_type := PSEC_DATA_FRAME;
+						i := 0;
+						t := 0;
+						ramAddress <= 0;
 						timeoutError <= '0';
 						SOF_done := false;
-						channelsDone := 0;
+						Psec4sDone := 0;
 						preambleDone := false;
 						psecDataDone := false;
 						trigDone := false;
@@ -148,7 +163,19 @@ begin
             when GET_DATA =>
 						
 						-- choose the correct data 
-						if (not SOF_done) then		-- start of frame
+						-----------------------------
+						
+						
+						-- ID frame
+						if (frame_type = ID_FRAME) then
+						
+							txWord := IDframe_data(i);
+							i := i + 1;
+							if (i >= iDframe_len) then frameDone := true; end if;
+							
+
+						-- PSEC data frame
+						elsif (not SOF_done) then		-- start of frame
 							txWord := STARTWORD; 
 							i := i + 1;
 							if (i >= 2) then		-- send twice
@@ -157,7 +184,7 @@ begin
 							end if;
                   
 						
-						elsif (channelsDone < 5) then
+						elsif (Psec4sDone < 5) then
 							
 							if (not preambleDone) then		-- preamble
 								txWord := x"F005";
@@ -165,8 +192,12 @@ begin
 								preambleDone := true;
 							
 							elsif (not psecDataDone) then
-								txWord := std_logic_vector(to_unsigned(i,16)); --ramReadData(ch);
-								address <= address + 1;
+								if (testMode.sequencedPsecData = '1') then
+									txWord := std_logic_vector(to_unsigned(i,16));
+								else
+									txWord := ramData(Psec4sDone);
+								end if;
+								ramAddress <= ramAddress + 1;
 								i := i + 1;
 								if (i >= 1536) then			-- 256 words x 6 channels
 									psecDataDone := true;
@@ -174,16 +205,14 @@ begin
 								end if;
 								
 							else							-- postamble
-								if (i < 2) then
-									txWord := x"BA11";
-									i := i + 1;									
-								elsif (i < 15) then
-									txWord := info(channelsDone, i - 2);
+								if (i <= 13) then
+									txWord := info(Psec4sDone, i);
 									i := i + 1;
 								else
 									txWord := PSEC_END_WORD;
 									i := 0;
-									channelsDone := channelsDone + 1;		-- finished the current channel
+									ramAddress <= 0;			-- reset address counter for next channel
+									Psec4sDone := Psec4sDone + 1;		-- finished the current channel
 									preambleDone := false;
 									psecDataDone := false;
 								end if;
@@ -233,7 +262,7 @@ begin
 						t := 0; -- clear timeout
                   if (bytesDone >= 2) then 		-- the 16-bit word has been sent
                      if (frameDone) then 
-								readDone <= '1';
+								uartTx_done <= '1';
 								state := WAIT_FOR_REQUEST;
 							else
 								state := GET_DATA;
@@ -274,7 +303,45 @@ end process;
                
                
                
-    
+--------------------------------------------
+-- ID FRAME DATA
+--------------------------------------------              
+IDframe_data(0) <= x"1234";
+IDframe_data(1) <= x"900D";
+IDframe_data(2) <= x"F00D";
+IDframe_data(3) <= x"0000";
+IDframe_data(4) <= x"0000";
+IDframe_data(5) <= x"0000";
+IDframe_data(6) <= x"0000";
+IDframe_data(7) <= x"0000";
+IDframe_data(8) <= x"0000";
+IDframe_data(9) <= x"0000";
+IDframe_data(10) <= x"0000";
+IDframe_data(11) <= x"0000";
+IDframe_data(12) <= x"0000";
+IDframe_data(13) <= x"0000";
+IDframe_data(14) <= x"0000";
+IDframe_data(15) <= x"0000";
+IDframe_data(16) <= x"0000";
+IDframe_data(17) <= x"0000";
+IDframe_data(18) <= x"0000";
+IDframe_data(19) <= x"0000";
+IDframe_data(20) <= x"0000";
+IDframe_data(21) <= x"0000";
+IDframe_data(22) <= x"0000";
+IDframe_data(23) <= x"0000";
+IDframe_data(24) <= x"0000";
+IDframe_data(25) <= x"0000";
+IDframe_data(26) <= x"0000";
+IDframe_data(27) <= x"0000";
+IDframe_data(28) <= x"0000";
+IDframe_data(29) <= x"0000";
+IDframe_data(30) <= x"0000";
+IDframe_data(31) <= x"4321";
+
+
+               
+       
     
 		
 end vhdl;

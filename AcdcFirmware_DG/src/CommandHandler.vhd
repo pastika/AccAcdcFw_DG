@@ -2,13 +2,13 @@
 -- Univ. of Chicago HEP / electronics design group
 --    -- + KICP 2015 --
 --
--- PROJECT:      ANNIE => ACDC
+-- PROJECT:      ANNIE - ACDC
 -- FILE:         commandHandler.vhd
 -- AUTHOR:       D. Greenshields
--- DATE:         June 2020
+-- DATE:         July 2020
 --
 -- DESCRIPTION:  receives 32bit commands and generates appropriate control signals locally
---                and passes on commands to the ACDC boards if necessary
+--                
 --
 ---------------------------------------------------------------------------------
 
@@ -37,10 +37,12 @@ entity commandHandler is
 		selfTrigSetting		: out selfTrigSetting_type;   
 		RO_target				: out natArray16;   
 		ramReadRequest			: out std_logic;   
-		enableLED				: out std_logic;   
+		IDrequest				: out std_logic;
+		led_enable				: out std_logic;   
 		PLL_sampleMode			: out std_logic_vector(1 downto 0);       
 		trigValid 				: out std_logic;   
-		CC_event_RESET			: out std_logic
+		sysDone					: out std_logic;
+		testMode					: out testMode_type
 		);
 end commandHandler;
 
@@ -80,24 +82,28 @@ begin
 			selfTrig_reset		<= '0'; 
 			reset_request   	<= '0';
 			eventAndTime_reset <= '0';
-			CC_event_RESET		<= '0';
+			sysDone				<= '0';
 			ramReadRequest 	<= '0';
 			selfTrigMask		<= (others => '0');
 			selfTrigSetting(0) <= (others => '0');
 			selfTrigSetting(1) <= (others => '0');
-			enableLED			<= '0';
+			led_enable			<= '0';
 			trigValid   		<= '0';
 			calEnable			<= (others => '0'); 
+			IDrequest			<= '0';
+			testMode.sequencedPsecData <= '1';
 			
 			
-      elsif (din_valid = '0') then  -- no new instruction received
+			
+      elsif (din_valid = '0') then  
 
 				DLL_resetRequest	<= '0';
 				selfTrig_reset		<= '0'; 
 				reset_request   	<= '0';
 				eventAndTime_reset <= '0';
-				CC_event_RESET		<= '0';
+				sysDone				<= '0';
 				ramReadRequest 	<= '0';
+				IDrequest			<= '0';
      
       else     -- new instruction received
          		
@@ -152,6 +158,12 @@ begin
 						
 						
 						
+					when x"5" =>	-- request to send an ID data frame
+						
+						IDrequest <= '1';
+						
+						
+						
 					when x"6" =>	-- set_trig_mask_instruct 
 						
 						case cmdOption(3) is
@@ -193,7 +205,7 @@ begin
 					
 						case cmdValue(2) is
 							when '1' =>	ramReadRequest <= cmdValue(1);
-							when others=> enableLED <= cmdValue(0);
+							when others=> led_enable <= cmdValue(0);
 						end case;
 						
 						if (cmdValue(5) = '1') then
@@ -206,7 +218,7 @@ begin
 					
 						case cmdValue(2) is
 							when '1' =>	trigValid <= cmdValue(1);
-							when '0' =>	CC_event_RESET <= cmdValue(0);
+							when '0' =>	sysDone <= cmdValue(0);
 						end case;
 
 					
@@ -215,6 +227,13 @@ begin
 						
 						null;
 						
+						
+						
+					when x"D" =>	-- test mode
+					
+						testMode.sequencedPsecData <= cmdValue(0);
+						
+					
 						
 						
 					when others =>

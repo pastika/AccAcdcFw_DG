@@ -2,7 +2,7 @@
 -- Univ. of Chicago HEP / electronics design group
 --    -- + KICP 2015 --
 --
--- PROJECT:      ACC
+-- PROJECT:      ANNIE - ACDC
 -- FILE:         timeout.vhd
 -- AUTHOR:       D. Greenshields
 -- DATE:         June 2020
@@ -69,7 +69,6 @@ begin
 		if (enable = '1') then
 			
 			if (t < len) then
-				expired <= '0';	
 				t := t + 1;
 			else
 				x := '1';

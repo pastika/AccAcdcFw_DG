@@ -25,8 +25,7 @@ ENTITY uart_comms_8bit IS
 	PORT
 	(
 		reset 				:  IN  STD_LOGIC;
-		uart_clock 			:  IN  STD_LOGIC;
-		sys_clock			:	IN  STD_LOGIC;
+		clock 				:  IN  clock_type;
 		txIn 					:  IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
 		txIn_valid 			:  IN  STD_LOGIC;
 		txOut 				:  OUT STD_LOGIC;
@@ -84,7 +83,7 @@ uart0 : uart
 	(	dataLen => 8, clockDivRatio	=> 16)
 	PORT map
 	(
-		clock => uart_clock,
+		clock => clock.uart,
 		reset => reset,	
 		txData => txByte,
 		txData_valid => txByte_valid,
@@ -106,14 +105,14 @@ uart0 : uart
 -- Adds frame header info to valid input data and sends bytes to uart
 
 -- synchronize
-TX_SYNC: pulseSync port map (sys_clock, uart_clock, txIn_valid, txIn_valid_z);
+TX_SYNC: pulseSync port map (clock.sys, clock.uart, txIn_valid, txIn_valid_z);
 
-process(uart_clock)
+process(clock.uart)
 variable bytesDone: natural;
 variable done: boolean;
 variable txFrame : std_logic_vector(47 downto 0); -- 16 bit header + 32 bit data
 begin
-	if (rising_edge(uart_clock)) then
+	if (rising_edge(clock.uart)) then
 			
 		 
       if (reset = '1') then
@@ -176,14 +175,14 @@ end process;
 -- takes in bytes and turns them into 16 bit words
 
 -- synchronize
-DEC_VALID_OUT_SYNC: pulseSync port map (uart_clock, sys_clock, rxOut_valid_z, rxOut_valid);
+DEC_VALID_OUT_SYNC: pulseSync port map (clock.uart, clock.sys, rxOut_valid_z, rxOut_valid);
 
 
-process(uart_clock)
+process(clock.uart)
    variable getLowerByte : boolean;
    variable v:  std_logic;	-- 'valid' flag
 begin
-	if (rising_edge(uart_clock)) then	
+	if (rising_edge(clock.uart)) then	
      
       if (reset = '1' or rxWordAlignReset = '1') then
 			

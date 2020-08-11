@@ -2,7 +2,7 @@
 -- Univ. of Chicago  
 --    
 --
--- PROJECT:      ANNIE ACDC
+-- PROJECT:      ANNIE - ACDC
 -- FILE:         dacSerial.vhd
 -- AUTHOR:       D. Greenshields
 -- DATE:         July 2020
@@ -12,7 +12,10 @@
 --    				latches input data when update goes high and then writes
 --						latched data to all channels of all dacs in the chain
 --
---						Currently 2 devices per chain x 8 outputs per device = 16 total
+--						Currently 2 devices per chain x 8 outputs per device = 16 total analogue outputs
+--
+--						Processed with system clock but activated by a pulse on update clock
+--
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
 
@@ -24,8 +27,7 @@ use work.defs.all;
 
 entity dacSerial is
   port(
-        clock           : in    std_logic;      -- DAC clk ( < 50MHz ) 
-        update			   : in    std_logic;
+        clock           : in    clock_type;
         dataIn          : in    DACchain_data_type;  	-- array (0 to 1) of dac data
         dac    	      : out   dac_type
 	);
@@ -42,12 +44,12 @@ architecture vhdl of dacSerial is
 begin 
 
 
-dac.clear <= '1';		-- inactive, not used
+dac.clear <= '1';		-- hold the clear signal inactive
 
 
 
 
-SerialWrite: process(clock)
+SerialWrite: process(clock.sys)
 type dataWord_type is array (0 to 1) of std_logic_vector(11 downto 0);
 variable dataWord: dataWord_type;
 variable cmd: std_logic_vector(3 downto 0);
@@ -56,7 +58,7 @@ variable channel : natural;	-- channel number
 variable address : std_logic_vector(3 downto 0);	-- slv version of channel number
 variable chainData : std_logic_vector(63 downto 0);	-- the data that will be written serially
 begin 
-	if rising_edge(clock) then         
+	if rising_edge(clock.sys) then         
         
 		case STATE is
       
@@ -65,7 +67,7 @@ begin
             
 				dac.load <= '1';
 				dac.serialClock <= '0';
-            if (update = '1') then
+            if (clock.dacUpdate = '1') then
 					latchedData <= dataIn;
 					channel := 0;
 					STATE <= CREATE_CHAIN_DATA;

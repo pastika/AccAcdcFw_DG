@@ -2,12 +2,12 @@
 -- Univ. of Chicago HEP / electronics design group
 --    -- + KICP 2015 --
 --
--- PROJECT:      ANNIE
+-- PROJECT:      ANNIE - ACDC
 -- FILE:         uart.vhd
 -- AUTHOR:       D. Greenshields
 -- DATE:         July 2020
 --
--- DESCRIPTION:  serial comms
+-- DESCRIPTION:  asynchronous serial comms
 --	       	    
 ---------------------------------------------------------------------------------
 
@@ -216,12 +216,12 @@ begin
 					end if;
 										
 					t := t + 1;
-					if (t >= clockDivRatio) then
+					if (t >= clockDivRatio) then	-- end of bit period
 						t := 0;
 						sum := 0;
 						samplesDone := 0;
 						bitsDone := bitsDone + 1;
-						if (bitsDone >= frameLen) then
+						if (bitsDone >= frameLen) then	-- end of received frame
 							if (err = '0') then 
 								rxData_valid <= '1';
 								rxData <= rxReg;

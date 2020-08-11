@@ -1,10 +1,10 @@
 ---------------------------------------------------------------------------------
 -- Univ. of Chicago  
 --    
--- PROJECT:      ANNIE 
+-- PROJECT:      ANNIE - ACDC
 -- FILE:         defs.vhd
 -- AUTHOR:       D. Greenshields
--- DATE:         June 2020
+-- DATE:         July 2020
 --
 -- DESCRIPTION:  definitions
 --
@@ -81,6 +81,7 @@ constant RO: natArray16:= (16#CA00#, 16#CA00#, 16#CA00#, 16#CA00#, 16#CA00#);
 type clockSource_type is record
 	localOsc		:	std_logic;
 	jcpll			:	std_logic;
+	usb_IFCLK	:	std_logic;
 end record;
 
 
@@ -97,13 +98,13 @@ end record;
 
 type clock_type is record
 	sys			:	std_logic;
-   dac         :	std_logic;
    uart        :	std_logic;
    trig        :	std_logic;
    usb         :	std_logic;  
 	timer			:	std_logic;
-	update		:	std_logic;
-   pllLock     :	std_logic;  
+	dacUpdate	:	std_logic;
+   wilkUpdate	:	std_logic;
+	altpllLock  :	std_logic;  
 end record;
 
 
@@ -164,6 +165,18 @@ type dacWordArray_type is array (0 to N-1) of natural range 0 to serialDAC.maxVa
 
 
 ------------------------------------
+--	EVENT COUNT
+------------------------------------
+type eventCount_type is record
+	adc						:	std_logic_vector(31 downto 0);
+	trig						:	std_logic_vector(31 downto 0);
+end record;
+
+
+
+
+
+------------------------------------
 --	LEDS
 ------------------------------------
 constant numberOfLEDs: natural := 9;
@@ -183,11 +196,6 @@ type LEDsetup_type is record
 	period:			natural;
 	onTime:			natural;
 end record;
-	
-
-
-	
-	
 	
 	
 		
@@ -242,7 +250,6 @@ type PSEC4_out_array_type is array (0 to N-1) of PSEC4_out_type;
 type reset_type is record
 	global		:	std_logic;
 	request		:	std_logic;
-	len			:	natural;
 end record;
 
 
@@ -253,13 +260,14 @@ end record;
 --	SELF TRIG
 ------------------------------------
 type selfTrigSetting_type is array (1 downto 0) of std_logic_vector(10 downto 0);
+type psec4_trig_array_type is array (N-1 downto 0) of std_logic_vector(M-1 downto 0);
 
 type selfTrig_type is record
 	mask				:	std_logic_vector(N*M-1 downto 0);
 	setting			:	selfTrigSetting_type;
 	reset				:	std_logic;
    rates	         :	rate_count_array;
-   sig	       	:	std_logic_vector(M*N-1 downto 0);
+   fromPSEC4     	:	psec4_trig_array_type;
    sign	        	:	std_logic;
    clear	       	:	std_logic;  
    enable        	:	std_logic;
@@ -268,6 +276,34 @@ type selfTrig_type is record
    rateCount      :	rate_count_Array;
 	internal			:	array6;
 end record;
+
+
+
+
+
+
+------------------------------------
+--	TEST MODE
+------------------------------------
+
+type testMode_type is record
+	sequencedPsecData	:	std_logic;
+ end record;
+ 
+ 
+ 
+
+
+ 
+------------------------------------
+--	TIMESTAMP
+------------------------------------
+type timestamp_type is record
+	adc						:	std_logic_vector(47 downto 0);
+	trig						:	std_logic_vector(47 downto 0);
+	trig_valid_to_event	:	std_logic_vector(47 downto 0);
+end record;
+
 
 
 
@@ -286,6 +322,7 @@ type trig_type is record
 	output				:	std_logic;
    reg	        		:	std_logic_vector(2 downto 0);
    reset	        		:	std_logic;
+	resetRequest		:	std_logic;
    flag	       		:	std_logic;  
    clear	       		:	std_logic;  
 	info					:	trigInfo_type;
@@ -330,7 +367,6 @@ end record;
 type USB_in_type is record
 	CTL		: std_logic_vector(2 downto 0);
 	CLKOUT	: std_logic;
-	IFCLK		: std_logic;
 	WAKEUP	: std_logic;
 end record;
 
@@ -374,11 +410,42 @@ end record;
 
 
 
+------------------------------------------------------------
 
 
 
 
 
+
+
+------------------------------------
+--	UNUSED I/O
+------------------------------------
+
+type unusedInput_type is record
+	reservedInput:	std_logic;
+	refClockIn:	std_logic_vector(4 downto 0);
+	Jctrl_miso:	std_logic;
+	Jctrl_aux_out:	std_logic;
+	DAC0_miso:	std_logic;
+	DAC1_miso:	std_logic;
+end record;
+
+
+
+type unusedOutput_type is record
+	reservedOutput: std_logic_vector(23 downto 0);
+	GPIO_1V2: std_logic_vector(21 downto 0);
+	GPIO_2V5: std_logic_vector(17 downto 12);
+	GPIO_3V3: std_logic_vector(12 downto 6);
+	CLKOUT_1V2: std_logic_vector(3 downto 0);
+	CLKOUT_2V5: std_logic_vector(5 downto 0);
+	trigSign: std_logic;
+	initDone: std_logic;
+	MCLK: std_logic;
+	freqSel: std_logic;
+	FPGA_CLKOUT: std_logic;
+end record;
 
 
 

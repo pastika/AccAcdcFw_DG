@@ -4,7 +4,7 @@ JedecChain;
 	DefaultMfr(6E);
 
 	P ActionCode(Cfg)
-		Device PartName(5AGXFB5H4F35) Path("C:/Users/ejangelico/Documents/AccFirmware_DG_v4-7-21/output_files/") File("AccFirmware_DG.sof") MfrSpec(OpMask(1));
+		Device PartName(EP4CGX110) Path("C:/Users/ejangelico/Documents/AcdcFirmware_DG_v5-8-7/") File("ACDC.jic") MfrSpec(OpMask(1) SEC_Device(EPCS64) Child_OpMask(1 7));
 
 ChainEnd;
 

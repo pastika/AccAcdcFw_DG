@@ -1,0 +1,393 @@
+---------------------------------------------------------------------------------
+-- Univ. of Chicago HEP / electronics design group
+--    -- + KICP 2015 --
+--
+-- PROJECT:      ACC
+-- FILE:         dataHandler.vhd
+-- AUTHOR:       D. Greenshields
+-- DATE:         June 2020
+--
+-- DESCRIPTION:  a state machine to get the data from the rx buffers and also local 
+-- 				  data sent across the usb link in a timely and orderly fashion
+--			        it is initiated automatically when the rx buffers become full
+--				     but can be invoked manually aswell
+--	       	     readMode determines what data is sent
+---------------------------------------------------------------------------------
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+USE ieee.numeric_std.ALL; 
+use work.defs.all;
+use work.components.all;
+
+
+
+entity dataHandler is
+	port (
+		reset						: 	in   	std_logic;
+		clock				      : 	in		std_logic;        
+		readMode             : in std_logic_vector(2 downto 0);
+		
+      timeoutError  			:	out	std_logic;
+      
+      
+      -- rx buffer ram signals
+      ramReadEnable        : 	out 	std_logic_vector(7 downto 0);
+      ramAddress           :  out   std_logic_vector(11 downto 0);
+      ramData              :  in    rx_ram_data_type;
+      bufferReadoutDone    :  out   std_logic_vector(7 downto 0);
+      
+      -- usb tx signals
+      dout 		            : 	out	std_logic_vector(15 downto 0);
+		dout_valid			   : 	out	std_logic;
+      txDataAck            : 	in 	std_logic;
+      txLockReq            : 	out	std_logic;
+      txLockAck            : 	in  	std_logic;
+      txPktEndRequest      : 	out  	std_logic;
+      
+      -- local info
+      localInfo_readRequest: in std_logic;      
+		localInfo				: in frameData_type;
+      linkStatusOk         : in std_logic_vector(7 downto 0);    
+      trigInfo             : in std_logic_vector(2 downto 0);    
+      rxPacketStarted      : in std_logic_vector(7 downto 0);    
+      rxPacketReceived     : in std_logic_vector(7 downto 0)
+);
+end dataHandler;
+
+
+architecture vhdl of dataHandler is
+
+
+
+type state_type is (
+   CHECK_IF_SEND_DATA,
+   BEGIN_SEND_DATA,
+   DATA_SETUP,
+   DATA_READ,
+   DATA_INC_INDEX,
+   DATA_ACK_WAIT,
+   DATA_nACK_WAIT,
+   PKTEND_ACK_WAIT,
+   TIMEOUT_ERROR,
+   DONE);
+   
+   
+
+
+-- local data frame
+constant localData_frameLen: natural := 31;
+
+
+-- ram data frame
+constant rxData_headerLen: natural := 7;
+constant rxData_ramLen: natural := 7680;
+constant rxData_frameEndLen: natural := 1;
+   
+   
+   
+
+
+signal localData:  frameData_type;
+signal rxData_header:  frameData_type;
+signal rxData_frameEnd:  frameData_type;
+signal address: natural;
+   
+	
+	begin	
+	
+
+               
+
+
+
+				
+   
+DATA_HANDLER: process(clock)
+variable getRamData: boolean;
+variable getLocalData: boolean;
+variable ch: integer;
+variable state: state_type;
+variable t: integer; -- timeout value 
+variable i: natural;  -- the index of the current data word within the frame = number of words done
+variable frameLen: natural;
+variable frameEnd_startPos: natural;
+variable rdMode: natural; -- an integer version of the 3 bit slv 'readMode'
+
+
+begin
+	if (rising_edge(clock)) then
+	
+		if (reset = '1') then
+			
+         bufferReadoutDone <= x"00";
+			state := CHECK_IF_SEND_DATA;
+         txPktEndRequest <= '0';
+         ramReadEnable <= X"00"; 
+         timeoutError <= '0';
+         dout_valid <= '0';
+         txLockReq <= '0';
+         
+			
+		else
+		
+			case state is
+         
+         
+         
+				when CHECK_IF_SEND_DATA => -- check for rx buffer full, or request to send local info
+			             
+               bufferReadoutDone <= x"00";
+               
+               getRamData := false;    -- flags used to indicate frame type required
+               getLocalData := false;
+               
+               rdMode := to_integer(unsigned(readMode));
+               
+               case rdMode is
+                  when 5 => 
+                     frameLen := localData_frameLen;
+                  when others => 
+                     frameEnd_startPos := rxData_headerLen + rxData_ramLen;
+                     frameLen :=  frameEnd_startPos + rxData_frameEndLen;
+               end case;
+ 
+               ch := -1;      -- no channel has been selected for readout yet
+					for k in 0 to 3 loop 
+						if (ch = -1 and rxPacketReceived(k) = '1' and rdMode = k + 1) then -- pick the first channel that has data ready to send
+							ch := k;
+                     getRamData := true;
+						end if;
+					end loop;
+							
+               if (getRamData = false and localInfo_readRequest = '1') then
+                  getLocalData := true;
+               end if;
+                            
+					if (getRamData or getLocalData) then 
+                  txLockReq <= '1';  -- request locking the usb bus in tx mode
+                  state := BEGIN_SEND_DATA; 
+               end if;
+                             
+                              
+               
+            when BEGIN_SEND_DATA => 
+               
+               if (txLockAck = '1') then   -- usb bus acknowledge, bus is now locked for tx use
+                  address <= 0;
+                  if (getRamData) then ramReadEnable(ch) <= '1'; end if;
+                  i := 0;
+                  state := DATA_SETUP;
+               end if;
+               
+               
+
+            when DATA_SETUP => null;   
+               -- on this clock cycle data comes out of the ram 
+               -- from the previously supplied address 
+               -- the data cannot also be read on this clock, it will be available next clock
+               state := DATA_READ;
+               
+               
+               
+            when DATA_READ =>
+               -- choose the correct data depending on the frame type and index pos within the frame
+               if (getLocalData) then   
+                  dout <= localData(i);
+               else
+                  if (i < rxData_headerLen) then --header
+                     dout <= rxData_header(i);
+                  elsif (i < frameEnd_startPos) then --ram data
+                     dout <= ramData(ch);
+                  else  
+                     dout <= rxData_frameEnd(i - frameEnd_startPos);-- frame end delimiter
+                  end if;
+               end if;
+               dout_valid <= '1';
+               state := DATA_INC_INDEX;
+               
+            
+            
+            when DATA_INC_INDEX =>        -- increment the index counter, and increase ram address if header is done
+               dout_valid <= '0';
+               i := i + 1; -- increment the index   (= number of words done)            
+               if (getRamData and i > rxData_headerLen) then
+                  address <= address + 1; -- increment address counter once the main data body is started
+               end if;
+               t := 48000000;  -- set timeout delay 1s for data acknowledge
+               state := DATA_ACK_WAIT;
+                  
+                  
+                  
+            when DATA_ACK_WAIT =>
+               if (txDataAck = '1') then  -- data was ack'ed
+                  state := DATA_nACK_WAIT;
+               else
+                  t := t - 1;
+                  if (t < 0) then state := TIMEOUT_ERROR; end if;     
+               end if;                 
+                  
+                  
+                  
+            when DATA_nACK_WAIT =>  -- wait for ack to diasppear
+               if (txDataAck = '0') then  -- data was de-ack'd
+                  t := 0; -- clear timeout
+                  if (i = frameLen) then
+                     txPktEndRequest <= '1';
+                     t := 48000000;  -- set timeout delay 1s [48MHz clock] for packet end acknowledge
+                     state := PKTEND_ACK_WAIT;
+                  else
+                     state := DATA_SETUP;
+                  end if;
+               else
+                  t := t - 1;
+                  if (t < 0) then state := TIMEOUT_ERROR; end if;     
+               end if;                 
+               
+               
+               
+            when PKTEND_ACK_WAIT =>
+               if (txDataAck = '1') then 
+                  state := DONE;
+               else
+                  t := t - 1;
+                  if (t < 0) then state := TIMEOUT_ERROR; end if;     
+               end if;                 
+
+ 
+ 
+            when TIMEOUT_ERROR =>
+               timeoutError <= '1';   -- generate an output pulse to indicate the error
+               state := DONE;
+               
+               
+
+            when DONE =>
+               txPktEndRequest <= '0';
+               ramReadEnable <= X"00"; 
+               timeoutError <= '0';
+               txLockReq <= '0';    -- this going low for at least one cycle means the usb read can access the bus next if it has data to process
+               if (getRamData) then
+                  bufferReadoutDone(ch) <= '1'; -- flag that the buffer was read. This is used to reset the corresponding buffer write process
+               end if;
+               state := CHECK_IF_SEND_DATA;
+               
+               
+               
+               
+               
+            when others => null;
+               
+               
+               
+         end case;
+         
+      end if;
+      
+   end if;
+   
+   
+end process;
+               
+               
+               
+    
+    
+    
+               
+--------------------------------------------
+-- RX RAM DATA FRAME 
+--------------------------------------------              
+
+-- header
+rxData_header(0) <= x"1234";
+rxData_header(1) <= localInfo(0);
+rxData_header(2) <= localInfo(1);
+rxData_header(3) <= localInfo(2);
+rxData_header(4) <= localInfo(3);
+rxData_header(5) <= localInfo(4);
+rxData_header(6) <= localInfo(5);
+
+-- frame end
+rxData_frameEnd(0) <= x"4321";
+
+
+-- the main body of the frame comes from rx data ram
+
+
+
+
+--------------------------------------------
+-- LOCAL DATA FRAME
+--------------------------------------------              
+localData(0) <= x"1234";
+localData(1) <= x"DEAD";
+localData(2) <= linkStatusOk & linkStatusOk;
+localData(3) <= localInfo(0);
+localData(4) <= localInfo(1)(0) & trigInfo & x"0" & rxPktInProgress & rxBufFull;
+localData(5) <= localInfo(2);
+localData(6) <= localInfo(3);
+localData(7) <= localInfo(4);
+localData(8) <= localInfo(5);
+localData(9) <= localInfo(6);
+localData(10) <= localInfo(7);
+localData(11) <= x"BEEF";
+localData(12) <= x"4321";
+localData(13) <= x"0000";
+localData(14) <= x"0000";
+localData(15) <= x"0000";
+localData(16) <= x"0000";
+localData(17) <= x"0000";
+localData(18) <= x"0000";
+localData(19) <= x"0000";
+localData(20) <= x"0000";
+localData(21) <= x"0000";
+localData(22) <= x"0000";
+localData(23) <= x"0000";
+localData(24) <= x"0000";
+localData(25) <= x"0000";
+localData(26) <= x"0000";
+localData(27) <= x"0000";
+localData(28) <= x"0000";
+localData(29) <= x"0000";
+localData(30) <= x"0000";
+
+
+               
+               
+               
+               
+               
+			
+end vhdl;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

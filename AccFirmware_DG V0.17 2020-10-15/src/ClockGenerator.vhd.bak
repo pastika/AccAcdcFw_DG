@@ -1,0 +1,82 @@
+---------------------------------------------------------------------------------
+-- Univ. of Chicago  
+--    --KICP--
+--
+-- PROJECT:      ANNIE
+-- FILE:         clock_manager.vhd
+-- AUTHOR:       D. Greenshields
+-- DATE:         28/05/2020
+--
+-- DESCRIPTION:  clock generator
+--
+---------------------------------------------------------------------------------
+
+library IEEE;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+
+entity ClockGenerator is
+	Port(
+		INCLK		: in	std_logic;		
+		CLK_SYS_4x	: out	std_logic;
+		CLK_SYS		: out	std_logic; 
+		clockOut_1MHz	: out	std_logic;
+		clockOut_1Hz	: out	std_logic);				
+		
+end ClockGenerator;
+
+
+architecture vhdl of ClockGenerator is
+
+
+	signal	clock_1MHz	:	std_logic;
+
+	
+	component pll_block
+		port( refclk, rst		: in 	std_logic;
+				outclk_0, outclk_1, outclk_2,
+				locked			: out	std_logic);
+	end component;
+	
+	
+begin
+
+	clockOut_1MHz	<=	clock_1MHz;
+
+	xPLL_BLOCK : pll_block
+		port map(refclk 	=> INCLK, 
+					rst		=> '0', 
+					outclk_0	=> CLK_SYS, 
+					outclk_1	=> clock_1MHz, 
+					outclk_2	=> CLK_SYS_4x);
+	
+
+	xCLK_GEN_1Hz : process(clock_1MHz)		-- clock divider 1MHz / 1000000 = 1Hz for led flash
+	variable a: natural;
+	begin
+		if (rising_edge(clock_1MHz)) then
+			if (a >= 999999) then a := 0; else a:= a + 1; end if;
+			if (a >= 500000) then clockOut_1Hz <= '0'; else clockOut_1Hz <= '1'; end if;
+		end if;
+	end process;
+	
+
+		
+end vhdl;
+
+		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+

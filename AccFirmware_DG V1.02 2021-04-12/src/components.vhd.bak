@@ -1,0 +1,266 @@
+---------------------------------------------------------------------------------
+-- Univ. of Chicago  
+--    
+-- PROJECT:      ANNIE 
+-- FILE:         defs.vhd
+-- AUTHOR:       e oberla
+-- EMAIL         ejo@uchicago.edu
+-- DATE:         
+--
+-- DESCRIPTION:  definitions
+--
+---------------------------------------------------------------------------------
+
+
+library IEEE;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
+
+package defs is
+
+--system instruction size
+constant instruction_size		:	natural := 32;
+
+--number of front-end boards (either 4 or 8, depending on RJ45 port installation)
+constant N	:	natural := 8;
+
+--RAM specifiers for tranceiver block
+constant	transceiver_mem_depth	:	integer := 15; --ram address size
+constant	transceiver_mem_width	:	integer := 16; --data size
+constant	ser_factor				:	integer := 8;
+constant num_rx_rams				:	integer := 2; --number of ram event buffers on serdes rx
+
+--defs for the SERDES links
+constant STARTWORD				: 	std_logic_vector := x"1234";
+constant STARTWORD_8a			: 	std_logic_vector := x"B7";
+constant STARTWORD_8b			: 	std_logic_vector := x"34";
+constant ENDWORD					: 	std_logic_vector := x"4321";
+
+constant ALIGN_WORD_16 			: 	std_logic_vector := x"FACE";
+constant ALIGN_WORD_8 			:  std_logic_vector := x"CE";
+
+
+--type definitions
+type rx_ram_flag_type is array(N-1 downto 0) of	std_logic_vector(num_rx_rams-1 downto 0);
+type rx_ram_data_type is array(N-1 downto 0) of	std_logic_vector(transceiver_mem_width-1 downto 0);
+type LVDS_inputArray_type is array(N-1 downto 0) of std_logic_vector(3 downto 0);
+type LVDS_outputArray_type is array(N-1 downto 0) of std_logic_vector(2 downto 0);
+
+type Array_8bit is array(N-1 downto 0) of std_logic_vector(7 downto 0);
+type Array_10bit is array(N-1 downto 0) of std_logic_vector(9 downto 0);
+type Array_16bit is array(N-1 downto 0) of std_logic_vector(15 downto 0);
+type Array_32bit is array(N-1 downto 0) of std_logic_vector(31 downto 0);
+
+
+
+	 
+	
+	
+-- 8b10b K codes
+constant K28_0	: std_logic_vector(7 downto 0) := "00011100";
+constant K28_1	: std_logic_vector(7 downto 0) := "00111100"; -- Link down
+constant K28_2	: std_logic_vector(7 downto 0) := "01011100";
+constant K28_3	: std_logic_vector(7 downto 0) := "01111100";
+constant K28_4	: std_logic_vector(7 downto 0) := "10011100";
+constant K28_5	: std_logic_vector(7 downto 0) := "10111100"; -- Link up, data valid
+constant K28_6	: std_logic_vector(7 downto 0) := "11011100";
+constant K28_7	: std_logic_vector(7 downto 0) := "11111100"; -- Link up, data not valid
+constant K23_7	: std_logic_vector(7 downto 0) := "11110111"; 
+constant K27_7	: std_logic_vector(7 downto 0) := "11111011"; -- Link Error
+constant K29_7	: std_logic_vector(7 downto 0) := "11111101";
+constant K30_7	: std_logic_vector(7 downto 0) := "11111110";
+		
+		
+		
+		
+		
+		
+		
+		
+-- components
+
+
+
+component UsbDriver_CY7C68013A is
+   port ( 
+	
+		-- external connections to usb chip
+	
+			clock		: in		std_logic;   	--usb clock 48 Mhz
+			USB_BUS  		: inout  std_logic_vector (15 downto 0);  --usb data bus to PHY
+         USB_FLAGA    	: in    	std_logic;     --usb flag a
+         USB_FLAGB    	: in  	std_logic;		--usb flag b (unused)
+         USB_FLAGC    	: in  	std_logic;		--usb flag c 
+         USB_PKTEND    	: out 	std_logic;		--usb packet end flag
+         USB_SLOE     	: out   	std_logic;    	--usb signal-low output enable
+         USB_SLRD     	: out   	std_logic;		--usb signal-low read (generated clock)
+         USB_FIFOADR  	: out   	std_logic_vector (1 downto 0);
+			
+
+		-- global
+		
+			reset_async		: in  	std_logic;	   --reset signal to usb block
+
+
+		-- usb write to pc		
+		
+			TxStart	: in  	std_logic;		--usb start write cycle
+			TxWordCount	: in		std_logic_vector(23 downto 0);
+         TxDone  		: out 	std_logic; 	   --usb done with write cycle to PC flag
+         USB_SLWR  		: out 	std_logic;		--usb signal-low write (generated clock)
+         TxBusy 		: out 	std_logic;     --usb write-busy indicator (not a PHY pin)
+			TxData		: in		std_logic_vector (15 downto 0);  --data bus from firmware
+			
+		-- usb read from pc	
+			
+         RxBusy 		: out   	std_logic;		--usb read-busy indicator (not a PHY pin)
+         RxData: out   	std_logic_vector(31 downto 0);
+			RxDataRdy:out		std_logic);		--flag hi = packet read from PC is ready
+		
+			
+	end component;
+
+	
+		
+component ClockGenerator is
+	Port(
+		INCLK		: in	std_logic;		
+		CLK_SYS_4x	: out	std_logic;
+		CLK_SYS		: out	std_logic; 
+		clockOut_1MHz	: out	std_logic;
+		clockOut_1Hz		: out	std_logic);		
+end component;
+		
+		
+		
+component ResetGenerator is
+	Port(
+		ResetLength	:	in	natural; -- time in microseconds
+		Clock_1MHz:		in		std_logic;  --1 MHz from FPGA PLL
+		ResetRequest	:	in		std_logic;	--user input, rising edge
+		ResetOut		:	out	std_logic);	--active high
+		
+end component;
+
+		
+		
+		
+		
+
+
+component rx_ram
+	port (
+			xDATA				: in	std_logic_vector(transceiver_mem_width-1 downto 0);
+			xWR_ADRS			: in	std_logic_vector(transceiver_mem_depth-1 downto 0);
+			xWR_EN			: in	std_logic;
+			xRD_ADRS			: in	std_logic_vector(transceiver_mem_depth-1 downto 0);
+			xRD_EN			: in	std_logic;
+			xRD_CLK			: in	std_logic;
+			xWR_CLK			: in	std_logic;
+			xRAM_DATA		: out	std_logic_vector(transceiver_mem_width-1 downto 0));
+end component;
+
+
+
+
+
+component uart_rxBuffer is
+	port(
+		reset				: in	std_logic;	--global reset
+		clock					: in	std_logic;	--system clock		 
+		read_enable			: in	std_logic; 	--enable reading from RAM block
+		read_address		: in	std_logic_vector(transceiver_mem_depth-1 downto 0);--ram address
+		read_clock			: in	std_logic;	--slwr from USB	
+		mem_full_flag		: out	std_logic_vector(num_rx_rams-1 downto 0);	--event in RAM
+		din				: in	std_logic_vector(transceiver_mem_width-1 downto 0);--data in
+		din_valid		: in	std_logic;		 
+		dout				: out	std_logic_vector(transceiver_mem_width-1 downto 0);--data out
+		wrRam_select	: in	std_logic_vector(num_rx_rams-1 downto 0); --select ram block, write
+		rdRam_select		: in	std_logic_vector(num_rx_rams-1 downto 0); --select ram block, read
+		rxPacket			: out std_logic	--flag that a data packet from front-end was received
+		);	
+end component;
+
+
+
+
+
+
+component uart_comms IS 
+	PORT
+	(
+		reset 		:  IN  STD_LOGIC;
+		clock 				:  IN  STD_LOGIC;
+		clock_4x		:	IN  STD_LOGIC;
+		linkStatusOk 	:  OUT STD_LOGIC;
+		tx_in 			:  IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
+		tx_in_valid 	:  IN  STD_LOGIC;
+		tx_buf_full 	:  OUT STD_LOGIC;
+		tx_out 	:  OUT STD_LOGIC;
+		rx_in 	:  IN  STD_LOGIC;
+		rx_out 			:  OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
+		rx_out_valid		:  OUT STD_LOGIC
+		
+	);
+END component;
+
+
+
+component uart_txFrame is
+	port(
+		reset				: in	std_logic;	--global reset
+		clock				: in	std_logic;	--system clock		
+		din				: in	std_logic_vector(31 downto 0);	--32bit word in
+		din_valid		: in	std_logic;	--intruction ready to send to front-end
+		enable			: in  std_logic;
+		dout				: out	std_logic_vector(7 downto 0);	--byte out  
+		dout_valid		: out	std_logic);	--intruction ready to send to front-end
+		
+end component;
+
+
+entity usb_txDriver is
+   port ( 	
+		-- external connections to usb chip	
+			clock		   : in		std_logic;   	--usb clock 48 Mhz
+			reset_async	: in  	std_logic;	   --reset signal to usb block
+			dout  		: inout  std_logic_vector (15 downto 0);  --usb data bus to PHY
+         USB_FLAGC   : in  	std_logic;		--usb flag c 
+         USB_PKTEND  : out 	std_logic;		--usb packet end flag
+
+		-- usb write to pc				
+			start	      : in  	std_logic;		--usb start write cycle
+			wordCount	: in		std_logic_vector(23 downto 0);
+         done  		: out 	std_logic; 	   --usb done with write cycle to PC flag
+         dataClock   : out 	std_logic;		--usb signal-low write (generated clock)
+         busy  		: out 	std_logic;     --usb write-busy indicator (not a PHY pin)
+			din	   	: in		std_logic_vector (15 downto 0));  --data bus from firmware
+	end usb_txDriver;
+
+
+
+end defs;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

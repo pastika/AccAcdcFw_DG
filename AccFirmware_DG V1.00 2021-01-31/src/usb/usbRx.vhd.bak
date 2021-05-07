@@ -1,0 +1,156 @@
+---------------------------------------------------------------------------------
+-- Univ. of Chicago HEP / electronics design group
+--    -- + KICP 2015 --
+--
+-- PROJECT:      
+-- FILE:         usb_rxDriver.vhd
+-- AUTHOR:       D. Greenshields
+-- DATE:         June 2020
+--
+-- DESCRIPTION:  receives 32-bit words from the usb port by joining two successive 16 bit words
+--
+---------------------------------------------------------------------------------
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+entity usb_rxDriver is
+   port ( 
+		clock		      : in		std_logic;   	--usb clock 48 Mhz
+		reset		      : in  	std_logic;	   --reset signal to usb block
+		din  		      : in     std_logic_vector (15 downto 0);  --usb data from PHY
+      busReadEnable 	: out   	std_logic;     --when high disables drive to usb bus thus enabling reading
+      enable       	: in    	std_logic;     --
+      dataAvailable  : in    	std_logic;     --usb data received flag
+      SLOE         	: out   	std_logic;    	--usb bus output enable, active low
+      SLRD     	   : out   	std_logic;		--usb bus read, active low
+      FIFOADR  	   : out   	std_logic_vector (1 downto 0); -- usb endpoint fifo select			
+      busy 		      : out   	std_logic;		--usb read-busy indicator (not a PHY pin)
+      dout           : out   	std_logic_vector(31 downto 0);
+		dout_valid     : out		std_logic);		--flag hi = packet read from PC is ready				
+	end usb_rxDriver;
+
+	
+	
+architecture vhdl of usb_rxDriver is
+
+	
+	signal 	reset_z:	std_logic;	-- reset signal synchronized with IFCLK
+	
+	
+	
+	
+begin
+
+
+
+--------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+--USB read from PC
+---------------------------------------------------------------------------------
+proc_usb_read : process(clock)
+variable isLower: boolean; -- flag to say this is the lower 16 bits of the command word (bits 15 to 0)
+variable holdoff: natural; -- a timer to ensure a minimum number of clock cycles between successive received 32-bit instruction words (if needed)
+variable nextState: natural; 
+variable state: natural; -- a numeric state value, to allow ease of adjusting delays
+	begin
+		if rising_edge(clock) then
+			
+         -- synchronize the reset signal, as it comes from the system clock
+         reset_z <= reset;
+         
+         
+         if (reset_z = '1') then
+				
+            SLRD 			   <= '1'; 
+				SLOE 			   <= '1';
+				FIFOADR 		   <= "10";
+				busReadEnable  <= '0';
+				isLower 		   := true; -- waiting for the lower 16 bits of command word
+				busy 		      <= '0';
+				dout_valid     <= '0';
+            holdoff     := 0;
+				state       := 0;
+            nextState   := 0;
+            
+			
+         else
+				
+            
+            if (state = 0) then nextState := 0; else nextState := state + 1; end if;
+            
+            if (holdoff > 0) then holdoff := holdoff - 1; end if;
+            
+            
+				case	state is	
+					                           
+               when 0 =>
+                  dout_valid <= '0';
+                  SLOE 			   <= '1';
+                  SLRD 			   <= '1';
+                  FIFOADR 		   <= "10"; -- select the tx fifo while not reading to allow tx operations to go ahead
+                  dout_valid	   <= '0';
+                  busReadEnable 	<= '0'; -- allow tx to drive the bus                                  
+                  
+                  if (dataAvailable = '1' and enable = '1' and holdoff = 0) then	-- flagA = rx data available
+							busy <= '1';   -- flag to the tx driver that the bus is not available
+							nextState := 1;
+						elsif (isLower) then -- this keeps busy high while waiting for upper part of command word
+                     busy <= '0'; 
+                  end if;
+             
+               when 1 => busReadEnable <= '1'; FIFOADR <= "00";-- disable acc bus drive to allow reading from usb chip;  -- select the rx data fifo       	                            
+               when 2 => SLOE <= '0'; 					                              
+               when 3 => SLRD <= '0'; 					               
+
+               when 4 =>					
+                  if (isLower) then
+                     dout(15 downto 0) <= din;
+                  else
+                     dout(31 downto 16) <= din;
+                  end if;
+               
+               when 5 => SLRD <= '1'; 					               
+               when 6 => SLOE <= '1';					               
+
+               when 7 =>
+                  if (not isLower) then -- full 32 bits were received
+                     dout_valid <= '1'; 
+                     holdoff := 10;
+                  end if; 
+                  
+                  isLower := not isLower;
+                  nextState := 0;
+            
+               when others => null;
+               
+               
+            
+            end case;
+            
+            
+            state := nextState;                      
+            
+            
+         end if;
+      end if;
+   end process;
+ 
+ 
+ 
+ 
+ 
+end vhdl;
+
+
+
+
+
+
+
+
+
+
+

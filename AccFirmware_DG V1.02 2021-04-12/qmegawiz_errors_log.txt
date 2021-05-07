@@ -1,0 +1,76 @@
+
+
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/FPGA/AccFirmware_DG_v1/src/QIPcomponents/pll_block.vhd
+
+Jul 02 02PM:46:47>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/FPGA/AccFirmware_DG_v1/src/QIPcomponents/pll.v
+
+Jul 02 02PM:50:30>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/FPGA/AccFirmware_DG_v1/src/QIPcomponents/pll_block.vhd
+
+Jul 02 02PM:54:34>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/FPGA/AccFirmware_DG_v1/src/QIPcomponents/pll_block.vhd
+
+Jul 02 02PM:55:08>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/FPGA/AccFirmware_DG_v1/src/QIPcomponents/pll.vhd
+
+Jul 02 03PM:00:50>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/FPGA/AccFirmware_DG_v1/src/QIPcomponents/pll.vhd
+
+Jul 02 03PM:01:06>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+E:/Projects/2020/PRJ_DG2005_Annie/ACC/FPGA/AccFirmware_DG_v3/src/QIPcomponents/pll.vhd
+
+Jul 21 08AM:25:05>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+E:/Projects/2020/PRJ_DG2005_Annie/ACC/FPGA/AccFirmware_DG_v3/src/QIPcomponents/pll.vhd
+
+Jul 21 08AM:25:12>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+E:/Projects/2020/PRJ_DG2005_Annie/ACC/FPGA/AccFirmware_DG_v3/src/QIPcomponents/pll.vhd
+
+Jul 21 08AM:37:03>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+E:/Projects/2020/PRJ_DG2005_Annie/ACC/FPGA/AccFirmware_DG_v3/src/QIPcomponents/pll.vhd
+
+Jul 21 08AM:43:55>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+E:/Projects/2020/PRJ_DG2005_Annie/ACC/FPGA/AccFirmware_DG_v4/src/QIPcomponents/pll.vhd
+
+Jul 21 11AM:23:13>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+E:/Projects/2020/PRJ_DG2005_Annie/ACC/FPGA/AccFirmware_DG_v4/src/QIPcomponents/pll.vhd
+
+Jul 21 11AM:36:26>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+E:/Projects/2020/PRJ_DG2005_Annie/ACC/FPGA/AccFirmware_DG_v4/src/QIPcomponents/pll.vhd
+
+Jul 21 11AM:37:00>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+E:/Projects/2020/PRJ_DG2005_Annie/ACC/FPGA/AccFirmware_DG_v4/src/QIPcomponents/pll.vhd
+
+Jul 21 11AM:39:18>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+E:/Projects/2020/PRJ_DG2005_Annie/ACC/FPGA/AccFirmware_DG_v4/src/QIPcomponents/pll.vhd
+
+Jul 21 11AM:45:48>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted

@@ -1,0 +1,28 @@
+Quartus Prime Archive log --	E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/ACC_main.qarlog
+
+Archive:	E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/ACC_main.qar
+Date:		Thu Feb 04 20:56:15 2021
+Quartus Prime		18.1.0 Build 625 09/12/2018 SJ Standard Edition
+
+	=========== Files Selected: ===========
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/db/AccFirmware_DG_tmp_qic_export_119/AccFirmware_DG.cmp.atm
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/db/AccFirmware_DG_tmp_qic_export_119/AccFirmware_DG.cmp.cfm
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/db/AccFirmware_DG_tmp_qic_export_119/AccFirmware_DG.cmp.dpi
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/db/AccFirmware_DG_tmp_qic_export_119/AccFirmware_DG.cmp.hdbx
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/db/AccFirmware_DG_tmp_qic_export_119/AccFirmware_DG.cmp.logdb
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/db/AccFirmware_DG_tmp_qic_export_119/AccFirmware_DG.cmp.map.kpt
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/db/AccFirmware_DG_tmp_qic_export_119/AccFirmware_DG.cmp.qxp_info
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/db/AccFirmware_DG_tmp_qic_export_119/AccFirmware_DG.cmp.rcf
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/db/AccFirmware_DG_tmp_qic_export_119/AccFirmware_DG.cmp.scidsc
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/db/AccFirmware_DG_tmp_qic_export_119/AccFirmware_DG.map.atm
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/db/AccFirmware_DG_tmp_qic_export_119/AccFirmware_DG.map.dpi
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/db/AccFirmware_DG_tmp_qic_export_119/AccFirmware_DG.map.hdbx
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/db/AccFirmware_DG_tmp_qic_export_119/AccFirmware_DG.map.logdb
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/db/AccFirmware_DG_tmp_qic_export_119/AccFirmware_DG.map.map.kpt
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/db/AccFirmware_DG_tmp_qic_export_119/AccFirmware_DG.map.qxp_info
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/db/AccFirmware_DG_tmp_qic_export_119/AccFirmware_DG.map.scidsc
+E:/Work/Projects/2020/PRJ_DG2005_Annie/ACC/AccFirmware_DG/db/AccFirmware_DG_tmp_qic_export_119/qic_export_file_list
+	======= Total: 17 files to archive =======
+
+	================ Status: ===============
+All files archived successfully.

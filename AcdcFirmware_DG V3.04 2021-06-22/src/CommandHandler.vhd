@@ -1,0 +1,364 @@
+---------------------------------------------------------------------------------
+-- Univ. of Chicago HEP / electronics design group
+--    -- + KICP 2015 --
+--
+-- PROJECT:      ANNIE - ACDC
+-- FILE:         commandHandler.vhd
+-- AUTHOR:       D. Greenshields
+-- DATE:         Oct 2020
+--
+-- DESCRIPTION:  receives 32bit commands and generates appropriate control signals locally
+--                
+--
+---------------------------------------------------------------------------------
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+USE ieee.numeric_std.ALL; 
+use work.defs.all;
+
+
+
+entity commandHandler is
+	port (
+		reset						: 	in   	std_logic;
+		clock				      : 	in		std_logic;        
+      din		      	   :  in    std_logic_vector(31 downto 0);
+      din_valid				:  in    std_logic;
+		trigSetup				: out trig_type;   
+		selfTrig					: out selfTrig_type;
+		Vbias						: out natArray16;    
+		DLL_Vdd					: out natArray16;     
+		calEnable				: out std_logic_vector(14 downto 0);   
+		reset_request			: out std_logic;   
+		DLL_resetRequest		: out std_logic;   
+		RO_target				: out natArray;   
+		ramReadRequest			: out std_logic;   
+		IDrequest				: out std_logic;
+		testMode					: out testMode_type
+		);
+end commandHandler;
+
+
+architecture vhdl of commandHandler is
+
+
+
+	
+	begin	
+	
+   
+   
+-- note
+-- the signals generated in this process either stay set until a new command arrives to change them,
+-- or they will last for one clock cycle and then reset
+--
+
+   
+COMMAND_HANDLER:	process(clock)
+variable psecMask: 		std_logic_vector(4 downto 0);
+variable cmdType: 		std_logic_vector(3 downto 0);
+variable cmdOption: 		std_logic_vector(3 downto 0);
+variable cmdOption2: 		std_logic_vector(3 downto 0);
+variable cmdOptionE: 		std_logic_vector(3 downto 0);
+variable cmdValue: 		std_logic_vector(11 downto 0);
+variable acdc_cmd: 		std_logic_vector(31 downto 0);	
+variable m: 		natural;
+variable x: natural;	
+variable opt: natural range 0 to 15;
+variable init: std_logic:='1';
+
+begin
+	if (rising_edge(clock)) then
+		
+		
+		
+		if (init = '1') then
+			
+			-- do once only at power-up
+			
+			init := '0';
+			testMode.DLL_updateEnable <= "11111";	-- default is all enabled
+		
+		end if;
+		
+		
+		
+		if (reset = '1' or din_valid = '0') then  
+
+		
+			if (reset = '1') then
+				
+				
+				-- POWER-ON DEFAULT VALUES
+				--------------------------
+				
+				for i in 0 to N-1 loop
+					selfTrig.threshold(i)	<= 0;
+					selfTrig.mask(i) 			<= "000000";
+					Vbias(i)				<= 16#0800#;
+					DLL_Vdd(i)			<= 16#0CFF#; 
+					RO_Target(i)		<= 16#CA00#;
+				end loop;
+				calEnable			<= (others => '0'); 
+				testMode.sequencedPsecData <= '0';
+				testMode.trig_noTransfer <= '0';
+				
+				-- trig
+				trigSetup.mode 	<= 0;
+				trigSetup.sma_invert <= '0';
+				selfTrig.coincidence_min <= 1;
+			
+				---------------------------
+			
+			
+			end if;
+			
+
+			-- Clear single-pulse signals
+			
+			DLL_resetRequest	<= '0';
+			reset_request   	<= '0';
+			ramReadRequest 	<= '0';
+			IDrequest			<= '0';
+			trigSetup.eventAndTime_reset <= '0';
+			trigSetup.transferEnableReq <= '0';
+			trigSetup.transferDisableReq <= '0';
+			trigSetup.resetReq <= '0';
+			
+			--
+	 
+	 
+      else     -- new instruction received
+         		
+			
+			--parse 32 bit instruction word:
+			--
+			cmdType				:= din(23 downto 20);
+			cmdValue				:= din(11 downto 0);
+
+			-- when psecMask not used:
+			cmdOption			:= din(19 downto 16);	
+         opt := to_integer(unsigned(cmdOption));
+			cmdOption2			:= din(15 downto 12);	
+			
+			-- when psecMask used: ("A" command only)
+			cmdOptionE			:= din(19 downto 17) & "0";	-- even numbers only
+			psecMask				:= din(16 downto 12);
+
+			
+			
+			
+         case cmdType is  -- command type                
+
+
+			
+			
+			
+					when x"A" =>	-- set parameter
+
+					
+						case cmdOptionE is
+						
+						
+							when x"0" =>	-- dll vdd							
+								
+								for j in 4 downto 0 loop
+									if (psecMask(j) = '1') then
+										DLL_Vdd(j) <= to_integer(unsigned(cmdValue));
+									end if;
+								end loop;
+
+								
+							when x"2" =>	-- pedestal offset 
+					
+								for j in 4 downto 0 loop
+									if (psecMask(j) = '1') then
+										Vbias(j) <= to_integer(unsigned(cmdValue));
+									end if;
+								end loop;
+
+	
+							when x"4" =>	-- ring oscillator feedback 
+					
+								for j in 4 downto 0 loop
+									if (psecMask(j) = '1') then 
+										RO_target(j) <= to_integer(unsigned(cmdValue));
+									end if;
+								end loop;
+
+								
+							when x"6" =>	-- self trigger threshold
+								
+								for j in 4 downto 0 loop
+									if (psecMask(j) = '1') then
+										selfTrig.threshold(j) <= to_integer(unsigned(cmdValue));
+									end if;
+								end loop;
+								
+								
+							when others => null;
+								
+								
+								
+						end case;
+						
+						
+						
+						
+						
+						
+					when x"B" =>	-- trigger 
+						
+						case cmdOption is
+							
+							
+							
+							when x"0" => 	-- mode 
+								
+								trigSetup.mode <= to_integer(unsigned(din(3 downto 0)));
+														
+							
+													
+							when x"1" => 	-- self trig setup
+							
+								case cmdOption2 is						
+									when x"0" => selfTrig.mask(0) <= din(5 downto 0);
+									when x"1" => selfTrig.mask(1) <= din(5 downto 0);
+									when x"2" => selfTrig.mask(2) <= din(5 downto 0);
+									when x"3" => selfTrig.mask(3) <= din(5 downto 0);
+									when x"4" => selfTrig.mask(4) <= din(5 downto 0);
+									when x"5" => selfTrig.coincidence_min <= to_integer(unsigned(din(4 downto 0)));
+									when x"6" => selfTrig.sign <= din(0);
+									when x"8" => selfTrig.use_coincidence <= din(0); 
+									
+									
+									
+									when others => null;
+								end case;
+								
+								
+
+							when x"2" => 	-- sma config
+							
+								case cmdOption2 is
+									when x"0" => trigSetup.sma_invert <= din(0);			-- 0=normal, 1=invert 
+									when others => null;
+								end case;
+								
+								
+								
+							when x"5" => 	-- control
+							
+								case cmdOption2 is
+									when x"0" => trigSetup.transferEnableReq <= '1'; -- tell the acdc that the acc buffer is ready for data
+									when x"1" => trigSetup.resetReq <= '1';
+									when x"2" => trigSetup.eventAndTime_reset <= '1';
+									when x"4" => trigSetup.transferDisableReq <= '1'; -- tell the acdc that the acc buffer is not ready for data
+									when others => null;
+								end case;
+								
+								
+								
+							when x"6" => 	-- test mode
+							
+								case cmdOption2 is
+									when x"0" => testMode.trig_noTransfer <= din(0);
+									when others => null;
+								end case;
+								
+								
+								
+							when others => null;
+						
+				
+		
+		
+						end case;
+						
+						
+						
+						
+						
+					when x"C" =>	-- calibration		
+						
+						case cmdOption is
+							when x"0" => calEnable(14 downto 0) <= din(14 downto 0);
+							when others => null;
+						end case;
+
+						
+						
+
+						
+					when x"D" =>	-- data 
+						
+						case cmdOption is
+							when x"0" => IDrequest <= '1';		-- request to send an ID data frame							
+							when others => null;
+						end case;
+
+						
+						
+						
+					
+					when x"E" =>	-- led control
+					
+
+						null;
+
+					
+					
+					
+					when x"F" =>	-- system command
+					
+						case cmdOption is					
+							
+							when x"0" => 	-- debug / test modes
+							
+								case cmdOption2 is 
+									when x"0" => testMode.sequencedPsecData <= cmdValue(0);
+									when x"1" => testMode.DLL_updateEnable <= cmdValue(4 downto 0);
+									when others => null;
+								end case;
+								
+								
+							when x"2" => DLL_resetRequest <= '1';
+							when x"F" => reset_request <= '1';	-- global reset 
+							when others => null;
+						
+						end case;		
+							
+						
+						
+												
+						
+					when others =>
+						
+						null;
+
+		
+		
+				end case;
+				
+      end if;
+   end if;
+end process;
+               
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			
+end vhdl;

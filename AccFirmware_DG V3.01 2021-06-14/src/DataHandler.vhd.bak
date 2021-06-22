@@ -1,0 +1,111 @@
+---------------------------------------------------------------------------------
+-- Univ. of Chicago HEP / electronics design group
+--    -- + KICP 2015 --
+--
+-- PROJECT:      ACC
+-- FILE:         dataHandler.vhd
+-- AUTHOR:       D. Greenshields
+-- DATE:         June 2020
+--
+-- DESCRIPTION:  a state machine to get the data from the rx buffers and also local 
+-- 				 data sent across the usb link in a timely and orderly fashion
+--			     it is initiated automatically when the rx buffers become full
+--				 but can be invoked manually aswell
+--				 readMode determines what data is sent
+---------------------------------------------------------------------------------
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use work.defs.all;
+use work.components.all;
+
+
+
+entity dataHandler is
+	port (
+		reset						: 	in   	std_logic;
+		clock				      : 	in		std_logic;        
+		rxBuf_		      	   :  16x 8 in    std_logic_vector(31 downto 0);
+		rxBuf_readRequest
+		
+		localInfo_in				:14x16 
+		dout 		            : 	out	std_logic_vector(31 downto 0);
+		dout_valid			   : 	out	std_logic;
+		dout_ack
+      waitForSys  			:	out	std_logic);
+end commandHandler;
+
+
+architecture vhdl of dataHandler is
+
+
+
+   
+   
+
+	
+	begin	
+	
+
+
+   
+DATA_HANDLER: process(clock)
+begin
+	if (rising_edge(clock)) then
+	
+		if (reset = '1') then
+			
+			state <= 0;
+			
+			
+		else
+		
+			case state is
+			
+				when 0 => -- check for rx buffer full
+			
+					ch := -1;
+					for i in 0 to 7 loop 
+						if (rxBuf_readRequest(i) and readMode = i) then
+							ch := i;
+							exit loop 
+						end if;
+					end if;
+							
+					rxBufRead := false;
+					if ()
+			
+end vhdl;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

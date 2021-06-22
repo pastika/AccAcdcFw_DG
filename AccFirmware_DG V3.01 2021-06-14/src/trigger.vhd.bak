@@ -1,0 +1,223 @@
+---------------------------------------------------------------------------------
+-- Univ. of Chicago  
+--    --KICP--
+--
+-- PROJECT:      ANNIE
+-- FILE:         ppsMux.vhd
+-- AUTHOR:       D. Greenshields
+-- DATE:         Apr 2021
+--
+-- DESCRIPTION:  Multiplex pps and beam gate onto one signal
+--
+--
+---------------------------------------------------------------------------------
+
+library IEEE;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+use work.components.all;
+use work.defs.all;
+
+
+
+entity ppsMux is
+	Port(
+		clock		: in	clock_type;
+		reset		: in std_logic;
+		pps		: in std_logic;
+		ppsEnable: in std_logic;
+		ppsDivRatio	: in natural range 0 to 65535;
+		beamGate	: in std_logic;
+		mux		:  out std_logic
+		);
+end ppsMux;
+
+
+architecture vhdl of ppsMux is
+
+	
+
+	
+
+signal ppsLatch: std_logic;
+signal ppsReset: std_logic;
+signal ppsGate: std_logic;
+signal ppsDivided: std_logic;
+signal ppsDivided_risingEdge: std_logic;
+signal ppsCountReset: std_logic;
+signal ppsCount: natural range 0 to 65535;
+signal ppsFallingEdge: std_logic;
+signal pps_z: std_logic;
+signal safeToSwitch_pps: std_logic;
+signal beamGate_z: std_logic;
+
+
+
+
+
+
+	
+begin
+
+
+
+
+-----------------------------------
+-- PPS pulse width controller
+-----------------------------------
+
+-- set the pulse width of the pps signal to between 1 and 2 clock cycles @ 40MHz
+-- (i.e. 25 to 50ns), regardless of the incoming pulse width
+-- rising edge must not be clocked as this contains timing information which would be lost if clocked
+
+
+-- latch the output high on the incoming rising edge
+PPS_LATCH: process(pps, ppsReset)
+begin
+	if (ppsReset = '1') then
+		ppsLatch <= '0';
+	elsif (rising_edge(pps)) then
+		ppsLatch <= '1';
+	end if;
+end process;
+
+
+-- reset the latch ready for the next pps
+PPS_RESET: process(clock.sys)
+begin
+	if (rising_edge(clock.sys)) then
+		pps_z <= pps;
+		ppsReset <= pps_z or (not ppsEnable);		-- permanent reset if pps not enabled
+	end if;
+end process;
+
+
+
+
+
+
+
+-----------------------------------
+-- PPS pulse gobbler
+-----------------------------------
+
+-- not every pps pulse needs to be timestamped
+-- this module removes pulses and leaves only 1 pulse every N pulses
+
+ppsDivided <= pps and ppsGate;
+
+
+PULSE_GOBBLER: process(clock.sys)
+begin
+	if (rising_edge(clock.sys)) then
+		if (reset = '1' or ppsCount >= ppsDivRatio) then
+			ppsCount <= 0;
+			ppsGate <= '1';
+		elsif (ppsFallingEdge = '1') then
+			ppsCount <= ppsCOunt + 1;
+		else
+			ppsGate <= '0';
+		end if;
+	end if;
+end process;
+
+
+
+
+
+
+
+-----------------------------------
+-- Multiplexer control
+-----------------------------------
+
+-- the multiplexer should not switch to pps while pps is high, this would create a false rising edge
+-- The 'safe to switch to pps' signal should go high just after the pps falling edge,
+-- and should go low just before the next pps pulse is expected.
+
+
+
+SAFE_TO_SWITCH_PPS: process(clock.sys)
+variable timer: natural:= 0;
+variable ppsPeriod: natural;
+variable safeToSwitch_pps: std_logic;
+variable safeToSwitch_beamGate: std_logic;
+
+begin
+	if (rising_edge(clock.sys)) then
+	
+		
+		-- timing parameters
+		ppsPeriod := ppsDivRatio * 40000000;	-- pps period with pulse divider	
+	
+	
+		-- system reset
+		if (reset = '1') then
+			timer := 0;
+		end if;
+		
+		
+		-- synchronize timer to pps rising edge
+		if (ppsDivided_risingEdge = '1') then
+			timer := 0;		
+		end if;
+		
+		
+		-- 'safe to switch to pps' signal window
+		-- From 100ns after pps rising edge to 50ms before next pps rising edge
+		if (timer >= 4 and timer < ppsPeriod - 2000000) then		
+			safeToSwitch_pps := '1';
+		else
+			safeToSwitch_pps := '0';
+		end if;
+		
+		
+		
+		-- 'safe to switch to beam gate' signal window
+		-- From 100ns after pps rising edge to 50ms before next pps rising edge
+		if (timer < 4) then
+			safeToSwitch_beamGate := '0';		-- pps pulse in progress,
+		else
+			safeToSwitch_beamGate := '1';		
+		end if;
+		
+		
+		if (safeToSwitch_pps = '1' and beamGate_z = '0') then
+			ppsSelect <= '1';
+		elsif (safeToSwitch_beamGate = '1'
+		
+	end if;
+end process;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+end vhdl;
+
+		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+

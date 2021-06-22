@@ -1,0 +1,263 @@
+---------------------------------------------------------------------------------
+-- Univ. of Chicago  
+--    
+--
+-- PROJECT:      ANNIE - ACDC
+-- FILE:         serialTx.vhd
+-- AUTHOR:       D. Greenshields
+-- DATE:         May 2021
+--
+-- DESCRIPTION:  transmits data to the serial data line
+--						each byte is converted to a 10 bit code and transmitted
+--						
+--						If there is no data to transmit, a special code is transmitted meaning 'line idle'
+--						to keep the tx line transitioning so that the receiver can maintain bit sync
+--
+--						Every 1ms a sync word is sent to allow the receiver to achieve symbol lock
+--						and/or to verify that everything is still in sync
+---------------------------------------------------------------------------------
+
+LIBRARY ieee;
+USE ieee.std_logic_1164.all; 
+LIBRARY work;
+use work.defs.all;
+use work.LibDG.pulseSync;
+use work.LibDG.encoder_8b10b;
+
+
+ENTITY synchronousTx_8b10b IS 
+	PORT
+	(
+		clock 				:  IN  std_logic;		
+		din 					:  IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
+		din_valid			:  IN  STD_LOGIC;
+		din_ack				:	out std_logic;
+		dout 					:  OUT STD_LOGIC	-- serial bitstream out
+	);
+END synchronousTx_8b10b;
+
+
+ARCHITECTURE vhdl OF synchronousTx_8b10b IS 
+
+
+
+
+signal enc_kin: std_logic;
+signal enc_din: std_logic_vector(7 downto 0);
+signal enc_dout: std_logic_vector(9 downto 0);
+signal enc_dout_valid: std_logic;
+signal enc_din_valid: std_logic;
+signal bitstream_buffer_empty: boolean;
+signal serializer_data_ack: std_logic;
+
+
+
+
+
+BEGIN 
+	
+	
+	
+
+
+	
+	
+	
+-----------------------------------------
+-- CODEWORD GENERATOR
+-----------------------------------------
+-- code the 8 bit data into 10 bit words using the 8b10b encoder engine
+-- Send a sync word every 1ms
+-- Send 'line idle' words when no data is available to transmit
+-- 
+CODEWORD_GENERATOR: process(clock)
+variable t: natural:= 0;
+variable sync_flag: std_logic;
+variable data_buffer: std_logic_vector(7 downto 0);		-- this is the next byte waiting to be processed
+variable data_buffer_empty: boolean:= true;
+variable data_reg: std_logic_vector(7 downto 0);		-- this is the current byte being processed
+variable data_reg_valid: boolean:= false;
+
+
+
+type state_type is (
+	WRITE_DATA,
+	WAIT_FOR_DATA_ACK
+);
+
+variable state: state_type:= WRITE_DATA;
+
+begin
+	if (rising_edge(clock)) then
+	
+		
+		
+		t := t + 1;
+		if (t >= 40000) then
+			sync_flag := '1';		-- flag indicating a sync word should be sent (every 1ms)
+			t := 0;
+		end if;
+		
+		
+		-- input buffering 
+		if ((not data_reg_valid) and (not data_buffer_empty)) then
+			data_reg := data_buffer;
+			data_reg_valid := true;
+			data_buffer_empty := true;
+		end if;
+		
+		
+		if (data_buffer_empty and din_valid = '1') then
+			data_buffer := din;
+			data_buffer_empty := false;
+			din_ack <= '1';
+		else
+			din_ack <= '0';
+		end if;
+		
+		
+		
+		case state is
+	
+	
+			when WRITE_DATA =>
+					
+				if (bitstream_buffer_empty) then 
+					
+					-- there are 3 options: (i) send sync word; (ii) send data word; (iii) send idle code
+			
+					enc_din_valid <= '1';		-- data will always be sent. Just need to determine what type
+				
+				
+					if (sync_flag = '1') then
+						
+						enc_din <= K28_7;		-- send sync code
+						enc_kin <= '1';
+						sync_flag := '0';
+
+					elsif (data_reg_valid) then
+					
+						enc_din <= data_reg;
+						din_ack <= '1';
+						enc_kin <= '0';
+
+					else
+					
+						enc_din <= K28_0;		-- send line idle code
+						enc_kin <= '1';
+					
+					end if;
+				
+				
+					state := WAIT_FOR_DATA_ACK;
+				
+				
+				end if;
+				
+				
+				
+			when WAIT_FOR_DATA_ACK =>
+			
+				din_ack <= '0';
+				enc_din_valid <= '0';
+				if (enc_dout_valid = '1') then state := WRITE_DATA; end if;
+			
+			
+					
+		end case;
+		
+	end if;
+	
+end process;
+
+
+
+
+
+
+
+
+
+-----------------------------------------
+-- 8b10b ENCODER
+-----------------------------------------
+ENCODER_map: encoder_8b10b port map (
+	clock				=> clock,
+	din				=> enc_din,
+	din_valid		=> enc_din_valid,
+	kin				=> enc_kin,
+	dout				=> enc_dout,
+	dout_valid		=> enc_dout_valid
+);
+
+
+
+
+
+
+
+
+-----------------------------------------
+-- BITSTREAM GENERATOR
+-----------------------------------------
+-- this should be kept running continuously
+-- with data from the 8b10b encoder	
+
+BITSTREAM_GENERATOR: process(clock)
+variable b: natural;		-- bit number (lsb is transmitted first)
+variable current_data: std_logic_vector(9 downto 0);
+variable data_buffer: std_logic_vector(9 downto 0);
+variable buffer_empty: boolean:= true;
+
+begin
+	if (rising_edge(clock)) then	
+    		
+		if (b = 0) then	-- bit 0. Get the new word to be transmitted
+				
+			if (not buffer_empty) then
+				current_data := data_buffer; 		-- get next data word
+				buffer_empty := true;
+			else
+				current_data := "0000000000";		-- no data was available (this is an error and should not happen). Sending zeros will cause the receiver to flag an error
+			end if;
+			
+		end if;
+		
+			
+		dout <= current_data(b);		-- output the data bit			
+			
+			
+		-- while the current word is being transmitted, get the next one ready in the buffer
+		if (buffer_empty and enc_dout_valid = '1') then
+			data_buffer := enc_dout;
+			buffer_empty := false;
+		end if;
+			
+		
+		b := b + 1;
+		if (b >= 10) then b := 0; end if;
+
+		bitstream_buffer_empty <= buffer_empty;
+		
+	end if;
+end process;
+	
+		
+		
+	
+
+	
+	
+
+
+					
+END vhdl;
+
+
+
+
+
+
+
+
+

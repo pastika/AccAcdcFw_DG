@@ -1,0 +1,372 @@
+---------------------------------------------------------------------------------
+-- Univ. of Chicago  
+--    
+--
+-- PROJECT:      ANNIE - ACDC
+-- FILE:         serialRx.vhd
+-- AUTHOR:       D. Greenshields
+-- DATE:         May 2021
+--
+-- DESCRIPTION:  serially receives the synchronous bitstream and converts it to bytes
+--
+--						Performs various tasks:
+--							clock recovery
+--							symbol synchronization 
+--							data recovery
+--
+-- received data is a continuous stream of 10-bit words
+-- These have a limited number of consecutive 0's or 1's
+-- so that a clock may be recovered from each edge received
+--
+-- special synchronization words are sent periodically which allow the
+-- receiver to align its symbols at the correct bit position
+--
+
+---------------------------------------------------------------------------------
+
+LIBRARY ieee;
+USE ieee.std_logic_1164.all; 
+LIBRARY work;
+use work.defs.all;
+use work.LibDG.all;
+
+
+
+ENTITY synchronousRx_8b10b IS 
+	PORT
+	(
+		clock_sys				:  IN  STD_LOGIC;
+		clock_x4					:  IN  STD_LOGIC;
+		clock_x8					:  IN  STD_LOGIC;
+		din						:  IN  STD_LOGIC;
+		sync_pulse				:	out std_logic;
+		rx_clock_fail			:	buffer std_logic;
+		symbol_align_error	:	buffer std_logic;
+		symbol_code_error		:	out std_logic;
+		symbol_sync_timeout	:	out std_logic;
+		disparity_error		:	out std_logic;
+		dout 						:	OUT STD_LOGIC_VECTOR(7 DOWNTO 0);	-- byte out
+		kout 						:	OUT STD_LOGIC;		-- when high indicates the output byte is a control byte, not data
+		dout_valid				:  OUT STD_LOGIC
+	);
+END synchronousRx_8b10b;
+
+
+ARCHITECTURE vhdl OF synchronousRx_8b10b IS 
+
+
+
+
+signal rxBit: std_logic;
+signal rxBit_valid: std_logic;
+signal rxBit_x: std_logic;
+signal rxBit_y: std_logic;
+signal rxBit_valid_x: std_logic;
+signal rxBit_valid_y: std_logic;
+signal serialIn_z: std_logic;
+signal serialIn_z2: std_logic;
+signal symbol: std_logic_vector(9 downto 0);
+signal symbol_y: std_logic_vector(9 downto 0);
+signal symbol_valid: std_logic;
+signal symbol_valid_y: std_logic;
+signal symbol_valid_z: std_logic;
+
+signal dec_error: std_logic;
+signal dec_dout: std_logic_vector(7 downto 0);
+signal dec_kout: std_logic;
+signal dec_dout_valid: std_logic;
+signal symbol_align_error_y: std_logic;
+signal disparity_error_y: std_logic;
+
+
+
+
+
+
+begin
+
+
+
+---------------------------------------------------
+-- SYMBOL DECODER 
+---------------------------------------------------
+-- Decodes incoming symbols into either bytes or control codes
+-- Checks for regular sync reception and performs timeout error check
+
+-- if D codes are received (Data) then convert received symbols into bytes 
+-- if K codes are received (special control codes) process them accordingly
+--
+-- Control codes used are:
+--		K28_7 "0011111000" = symbol sync => set timeout timer
+--		K28_0 "0011110100" = line idle, i.e. sender has no data => no action required
+
+
+
+
+SYMBOL_DECODER: process(clock_sys)
+variable v: std_logic:='0';
+variable sync_timeout: natural;
+begin
+	if (rising_edge(clock_sys)) then	
+     			
+		
+		if (dec_dout_valid = '1') then		
+			
+			if (dec_kout = '1') then		-- a control symbol was received
+			
+				case dec_dout is
+					when K28_7 =>	sync_timeout := 80000; -- set 2ms timeout after sync symbol reception
+					when others => null;
+				end case;
+				
+			end if;
+			
+		end if;
+		
+		
+		dout <= dec_dout;							-- output data byte or control code byte
+		kout <= dec_kout;							-- when high indicates the output data is a control byte, not a data byte
+		dout_valid <= dec_dout_valid and (not symbol_align_error);	
+		symbol_code_error <= dec_error;
+		
+
+		
+		-- sync timeout check
+		if (sync_timeout > 0) then 
+			symbol_sync_timeout <= '0';
+			sync_timeout := sync_timeout - 1; 
+		else
+			symbol_sync_timeout <= '1';
+		end if;
+		
+		
+		-- sync error signals
+		symbol_align_error <= symbol_align_error_y;
+		disparity_error <= disparity_error_y or rx_clock_fail;
+		
+						
+	end if;
+end process;
+	
+	
+
+
+	
+	
+	
+	
+---------------------------------------------------
+-- 8b10b DECODER
+---------------------------------------------------
+DECODER_map: decoder_8b10b port map (
+	clock				=> clock_sys,
+	din				=> symbol,
+	din_valid		=> symbol_valid,
+	kout				=> dec_kout,
+	dout				=> dec_dout,
+	dout_valid		=> dec_dout_valid,
+	symbol_error	=> dec_error
+);
+
+
+-- synchronize symbol data & valid to system clock
+DEC_8b10b: process(clock_sys)
+begin
+	if (rising_edge(clock_sys)) then
+		symbol <= symbol_y;
+		symbol_valid <= symbol_valid_z;
+	end if;
+end process;
+
+
+
+
+
+
+
+---------------------------------------------------
+-- SYMBOL RECOVERY 
+---------------------------------------------------
+-- rx bitstream is a continuous stream of 10 bit words
+-- so we need to find out which is bit 0 and then everything will
+-- fall into place and all the received data will be correct
+--
+-- This is done by looking for special unique sync words which have a longer
+-- than normal string of 1's or 0's and so can be easily identified
+-- once locked in it should stay in sync
+--
+-- sync words will be sent periodically by the sending end
+--	If a new sync word does not match the current bit alignment position
+-- 'align error' will go high and it will wait for another sync word to try again
+
+
+SYMBOL_SYNC: process(clock_x4)
+variable  symbol_reg: std_logic_vector(9 downto 0);
+variable  sync_holdoff: natural range 0 to 255:=0;
+variable  b: natural range 0 to 15;	-- bit number
+variable  aligned: std_logic:= '0';
+variable  t: natural range 0 to 255;	-- timer
+variable  rd: integer := 0;
+variable  disp: integer;
+variable  v: integer;
+
+begin
+	if (rising_edge(clock_x4)) then
+	
+		-- synchronization to x4 clock
+		rxBit <= rxBit_x;
+		rxBit_valid <= rxBit_valid_y;
+				
+		if (rxBit_valid = '1') then
+					
+			if (rxBit /= rxBit_y) then t := 0; end if;		-- time since last bit transition
+			rxBit_y <= rxBit;		
+			
+			-- store bit in shift register. Lsb is always recevied first
+			symbol_reg := rxBit & symbol_reg(9 downto 1);
+			
+
+			-- check for special unique symbol sync code
+			if (sync_holdoff = 0 and (symbol_reg = "0001111100" or symbol_reg = "1110000011")) then	
+									
+				-- disable sync search after we just found a sync word
+				-- searching will restart in a short time (about 10 bits time)
+				--
+				-- If a K28.7 sync word is received followed by a K28.0 'line idle' word,
+				-- a false inverted sync word will be detected overlapping the two words
+				-- Thus a sync search holdoff is employed to avoid detecting this false sync word				
+					
+				sync_holdoff := 10;		-- wait 10 cycles before looking for another sync symbol	
+				sync_pulse <= '1';		-- this is a test signal so that the sync pulses can be seen on a scope
+					
+				if (aligned = '0') then 
+					aligned := '1';
+					b := 9;			-- the bit just stored must be the last bit (msb) of the special code which has just been received, because the lsb is transmitted first
+				elsif (b /= 9) then 
+					aligned := '0';		 -- error: new alignment did not match previous bit position
+				end if;	
+			else
+				sync_pulse <= '0';
+			end if;		
+			
+			
+			if (b = 9 and aligned = '1') then		-- bit 9 was just received i.e. the 10th bit so a complete symbol has been received and is in the shift reg
+				symbol_y <= symbol_reg;
+				symbol_valid_y <= '1'; 
+			else
+				symbol_valid_y <= '0';
+			end if;
+				
+			if  (sync_holdoff > 0) then sync_holdoff := sync_holdoff - 1; end if;
+			
+			
+			b := b + 1;
+			if (b = 10) then b := 0; end if;
+		
+		
+		else
+		
+			sync_pulse <= '0';
+			symbol_valid_y <= '0';
+			
+		
+		end if;
+
+		
+
+		symbol_align_error_y <= (not aligned) or rx_clock_fail;
+		
+
+		-- Clock fail detect 
+		-- if the bit doesn't change value within a certain time this is an error
+		if (t < 100) then t := t + 1; rx_clock_fail <= '0'; else rx_clock_fail <= '1'; end if;
+		
+		
+		
+		-- RUNNING DISPARITY CHECKER
+		-- check the running total of logic 1's minus logic 0's in the received symbols
+		-- The sender should ensure that the long term average is zero thus keeping the line DC free
+		-- If the value is above a certain threshold an error will be flagged
+		if (symbol_valid_y = '1') then			
+			disp := 0;
+			for i in 0 to 9 loop
+				if (symbol(i) = '1') then v := 1; else v := -1; end if;
+				disp := disp + v;
+			end loop;
+			
+			if (rd > 10 or rd < -10) then disparity_error_y <= '1'; else disparity_error_y <= '0'; end if;
+		end if;
+	
+	
+		if (symbol_align_error_y = '1') then rd := 0; end if;		-- reset the running disparity count if an alignment error occurred
+	
+	
+	
+	end if;
+end process;
+
+
+-- sync to sys clock
+SYMBOL_CLOCK_SYNC: pulseSync port map (clock_x4, clock_sys, symbol_valid_y, symbol_valid_z);
+
+
+
+
+
+
+
+------------------------------------------
+-- BIT RECOVERY
+------------------------------------------
+-- recover the data bits from the received data stream by starting a timer at each clock transition received.
+-- then count the x8 clock cycles to find the middle of the bit period
+-- input bits will be sampled at the centre of the bit period
+--
+-- This is the only process that needs to run on the fastest clock (320MHz)
+--
+BIT_CLOCK_RECOVERY: process(clock_x8)
+variable t: natural range 0 to 7;
+
+begin
+	if (rising_edge(clock_x8)) then
+		
+		serialIn_z <= din;
+		serialIn_z2 <= serialIn_z;
+		
+		if (serialIn_z /= serialIn_z2) then t := 0; end if;		-- input transition
+			
+		-- processing clock = 320MHz
+		-- input bit rate = 40Mbps
+		-- so 8 processing clocks per bit, therefore t = 4 gives centre of bit
+		
+		if (t = 4) then 
+			rxBit_x <= serialIn_z;		-- the recovered output bit
+			rxBit_valid_x <= '1'; 		-- output valid flag
+		else 
+			rxBit_valid_x <= '0'; 
+		end if;
+		
+		t := t + 1; 
+				
+	end if;
+end process;
+
+
+-- sync to x4 clock
+BIT_CLOCK_SYNC: pulseSync port map (clock_x8, clock_x4, rxBit_valid_x, rxBit_valid_y);
+
+
+
+
+
+
+end vhdl;
+
+
+
+
+
+
+
+
+

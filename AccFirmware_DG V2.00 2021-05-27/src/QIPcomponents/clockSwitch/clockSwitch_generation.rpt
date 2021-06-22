@@ -1,0 +1,19 @@
+Info: Starting: Create HDL design files for synthesis
+Info: qsys-generate E:\Work\Projects\2020\PRJ_DG2005_Annie\ACC\AccFirmware_DG\src\QIPcomponents\clockSwitch.qsys --synthesis=VHDL --output-directory=E:\Work\Projects\2020\PRJ_DG2005_Annie\ACC\AccFirmware_DG\src\QIPcomponents\clockSwitch\synthesis --family="Arria V" --part=5AGXFB5H4F35C4
+Progress: Loading QIPcomponents/clockSwitch.qsys
+Progress: Reading input file
+Progress: Adding altclkctrl_0 [altclkctrl 18.1]
+Progress: Parameterizing module altclkctrl_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+: clockSwitch.altclkctrl_0: Targeting device family: Arria V.
+: clockSwitch.altclkctrl_0: Selecting AUTO allows the compiler to pick the best clock buffer to use, while other values restrict usage to only the given clock buffer.
+: clockSwitch.altclkctrl_0: The register mode of port 'ena' is unavailable while 'ena' port not added. 
+Info: clockSwitch: Generating clockSwitch "clockSwitch" for QUARTUS_SYNTH
+Info: altclkctrl_0: Generating top-level entity clockSwitch_altclkctrl_0.
+Info: altclkctrl_0: "clockSwitch" instantiated altclkctrl "altclkctrl_0"
+Info: clockSwitch: Done "clockSwitch" with 2 modules, 2 files
+Info: qsys-generate succeeded.
+Info: Finished: Create HDL design files for synthesis

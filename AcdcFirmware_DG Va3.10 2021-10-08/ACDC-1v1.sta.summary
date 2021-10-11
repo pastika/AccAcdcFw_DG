@@ -1,0 +1,221 @@
+------------------------------------------------------------
+Timing Analyzer Summary
+------------------------------------------------------------
+
+Type  : Slow 1200mV 85C Model Setup 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[2]'
+Slack : 0.404
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Setup 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[0]'
+Slack : 0.794
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Setup 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[1]'
+Slack : 0.802
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Setup 'clockIn.localOsc'
+Slack : 19.698
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Setup 'altera_reserved_tck'
+Slack : 45.018
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Hold 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[0]'
+Slack : 0.362
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Hold 'altera_reserved_tck'
+Slack : 0.393
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Hold 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[1]'
+Slack : 0.394
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Hold 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[2]'
+Slack : 0.394
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Hold 'clockIn.localOsc'
+Slack : 0.397
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Recovery 'altera_reserved_tck'
+Slack : 94.588
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Removal 'altera_reserved_tck'
+Slack : 1.208
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Minimum Pulse Width 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[2]'
+Slack : 0.625
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Minimum Pulse Width 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[1]'
+Slack : 2.743
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Minimum Pulse Width 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[0]'
+Slack : 12.118
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Minimum Pulse Width 'clockIn.localOsc'
+Slack : 12.156
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Minimum Pulse Width 'clockIn.jcpll'
+Slack : 12.315
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Minimum Pulse Width 'altera_reserved_tck'
+Slack : 49.719
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Setup 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[2]'
+Slack : 0.621
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Setup 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[0]'
+Slack : 0.978
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Setup 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[1]'
+Slack : 1.006
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Setup 'clockIn.localOsc'
+Slack : 20.204
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Setup 'altera_reserved_tck'
+Slack : 45.333
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Hold 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[0]'
+Slack : 0.328
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Hold 'altera_reserved_tck'
+Slack : 0.344
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Hold 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[1]'
+Slack : 0.346
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Hold 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[2]'
+Slack : 0.346
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Hold 'clockIn.localOsc'
+Slack : 0.355
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Recovery 'altera_reserved_tck'
+Slack : 95.074
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Removal 'altera_reserved_tck'
+Slack : 1.112
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Minimum Pulse Width 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[2]'
+Slack : 0.625
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Minimum Pulse Width 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[1]'
+Slack : 2.749
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Minimum Pulse Width 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[0]'
+Slack : 12.112
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Minimum Pulse Width 'clockIn.localOsc'
+Slack : 12.140
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Minimum Pulse Width 'clockIn.jcpll'
+Slack : 12.324
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Minimum Pulse Width 'altera_reserved_tck'
+Slack : 49.714
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Setup 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[2]'
+Slack : 1.197
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Setup 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[1]'
+Slack : 1.916
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Setup 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[0]'
+Slack : 1.951
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Setup 'clockIn.localOsc'
+Slack : 22.333
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Setup 'altera_reserved_tck'
+Slack : 47.832
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Hold 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[0]'
+Slack : 0.159
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Hold 'altera_reserved_tck'
+Slack : 0.175
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Hold 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[1]'
+Slack : 0.176
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Hold 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[2]'
+Slack : 0.176
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Hold 'clockIn.localOsc'
+Slack : 0.181
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Recovery 'altera_reserved_tck'
+Slack : 97.036
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Removal 'altera_reserved_tck'
+Slack : 0.562
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Minimum Pulse Width 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[2]'
+Slack : 1.125
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Minimum Pulse Width 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[1]'
+Slack : 2.853
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Minimum Pulse Width 'clockIn.localOsc'
+Slack : 11.804
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Minimum Pulse Width 'clockIn.jcpll'
+Slack : 11.949
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Minimum Pulse Width 'ClockGenerator:clockGen_map|pll:PLL_MAP|altpll:altpll_component|pll_altpll:auto_generated|wire_pll1_clk[0]'
+Slack : 12.228
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Minimum Pulse Width 'altera_reserved_tck'
+Slack : 49.414
+TNS   : 0.000
+
+------------------------------------------------------------

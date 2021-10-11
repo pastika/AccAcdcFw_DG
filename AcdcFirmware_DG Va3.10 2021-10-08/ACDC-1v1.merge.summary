@@ -1,0 +1,18 @@
+Partition Merge Status : Successful - Fri Oct 08 11:46:52 2021
+Quartus Prime Version : 18.1.0 Build 625 09/12/2018 SJ Standard Edition
+Revision Name : ACDC-1v1
+Top-level Entity Name : ACDC_main
+Family : Cyclone IV GX
+Total logic elements : 11,184
+    Total combinational functions : 7,983
+    Dedicated logic registers : 6,378
+Total registers : 6378
+Total pins : 274
+Total virtual pins : 0
+Total memory bits : 1,554,432
+Embedded Multiplier 9-bit elements : 0
+Total GXB Receiver Channel PCS : 0
+Total GXB Receiver Channel PMA : 0
+Total GXB Transmitter Channel PCS : 0
+Total GXB Transmitter Channel PMA : 0
+Total PLLs : 1

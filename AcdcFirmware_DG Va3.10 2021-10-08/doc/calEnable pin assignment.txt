@@ -1,0 +1,11 @@
+Note:
+
+
+To allow placement of CalEnable pins, go to Assignment Editor, then
+
+Edit / add the assigment for calEnable pins..
+
+	Assignment Name:		I/O Maximum toggle rate
+	Value:					0MHz
+	
+	

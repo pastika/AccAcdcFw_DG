@@ -38,9 +38,9 @@ end record;
 --
 constant firwareVersion: firmwareVersion_type:= (
 	
-	number => 	x"0301", 
-	year => 		x"2021",	
-	MMDD => 		x"0614"		-- month, date		
+	number => 	x"0600", 
+	year => 		x"2022",	
+	MMDD => 		x"0513"		-- month, date		
 	
 );
 --
@@ -238,16 +238,14 @@ end record;
 --	RX BUFFER
 ------------------------------------
 type rxBuffer_type is record
-	dataLen    		:	naturalArray_16bit;
+	dataLen    		:	Array_16bit;
 	reset				:	std_logic_vector(N-1 downto 0);
 	readReq			:	std_logic;
 	resetReq			:	std_logic_vector(N-1 downto 0);
 	empty				:	std_logic_vector(N-1 downto 0);
 	frame_received	:	std_logic_vector(N-1 downto 0);
-	ramReadEn 		:std_logic_vector(N-1 downto 0);
-	ramReadDone 	:std_logic_vector(N-1 downto 0);
-	ramAddress		:	std_logic_vector(transceiver_mem_depth-1 downto 0);--ram address
-	ramDataOut		:rx_ram_data_type;
+	fifoReadEn 		:std_logic_vector(N-1 downto 0);
+	fifoDataOut		:Array_16bit;
 end record;
 
 
@@ -268,6 +266,24 @@ end record;
 
 
 	
+------------------------------------
+--	Ethernet 
+------------------------------------
+
+type ETH_in_type is record
+  rx_clk : std_logic;
+  rx_ctl : std_logic;
+  rx_dat : std_logic_vector(3 downto 0);
+end record;
+
+type ETH_out_type is record
+  resetn : std_logic;
+  tx_clk : std_logic;
+  tx_ctl : std_logic;
+  tx_dat : std_logic_vector(3 downto 0);
+end record;
+
+
 ------------------------------------
 --	USB 
 ------------------------------------
@@ -318,6 +334,25 @@ type usb_type is record
 end record;
 
 		
+------------------------------------
+--	config regesters
+------------------------------------
+type config_type is record
+    rxBuffer_resetReq      : std_logic_vector(7 downto 0);
+    globalResetReq         : std_logic;
+    trig		           : trigSetup_type;
+    ledSetup			   : LEDSetup_type;
+    testCmd				   : testCmd_type;
+end record;
+
+type readback_reg_type is record
+  rxDataLen	                    : Array_16bit;
+  serialRX_rx_clock_fail        : std_logic_vector(N-1 downto 0);
+  serialRX_symbol_align_error   : std_logic_vector(N-1 downto 0);
+  serialRX_symbol_code_error    : std_logic_vector(N-1 downto 0);
+  serialRX_disparity_error      : std_logic_vector(N-1 downto 0);
+  pllLock                       : std_logic; --_Vector(3 downto 0);
+end record;
 
 
 

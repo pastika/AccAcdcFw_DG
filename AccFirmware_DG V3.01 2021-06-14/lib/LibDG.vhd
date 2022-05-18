@@ -231,6 +231,42 @@ end component;
 
 
 
+component pulseSync2 is
+  generic (
+    RESET_VAL : std_logic := '0');
+  port (
+    src_clk      : in  std_logic;
+    src_pulse    : in  std_logic;
+    src_aresetn  : in  std_logic;
+    dest_clk     : in  std_logic;
+    dest_pulse   : out std_logic;
+    dest_aresetn : in  std_logic);
+end component pulseSync2;
+
+
+component param_handshake_sync is
+  generic (
+    WIDTH : natural);
+  port (
+    src_clk      : in  std_logic;
+    src_params   : in  std_logic_vector(WIDTH-1 downto 0);
+    src_aresetn  : in  std_logic;
+    dest_clk     : in  std_logic;
+    dest_params  : out std_logic_vector(WIDTH-1 downto 0);
+    dest_aresetn : in  std_logic);
+end component param_handshake_sync;
+
+
+component sync_Bits_Altera is
+  generic (
+    BITS       : positive;
+    INIT       : std_logic_vector;
+    SYNC_DEPTH : natural range 2 to 5);
+  port (
+    Clock  : in  std_logic;
+    Input  : in  std_logic_vector(BITS - 1 downto 0);
+    Output : out std_logic_vector(BITS - 1 downto 0));
+end component sync_Bits_Altera;
 
 
 end LibDG;

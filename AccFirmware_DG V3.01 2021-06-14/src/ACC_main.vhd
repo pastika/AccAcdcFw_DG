@@ -31,6 +31,8 @@ entity ACC_main is
 		LVDS_Out			: out LVDS_outputArray_type;		
 		led            : out	std_logic_vector(2 downto 0); -- red(2), yellow(1), green(0)				
 		SMA				: inout	std_logic_vector(1 to 6);	
+        ETH_in          : in  ETH_in_type;
+        ETH_out         : out ETH_out_type;
 		USB_in			: in USB_in_type;
 		USB_out			: out USB_out_type;
 		USB_bus			: inout USB_bus_type;
@@ -44,7 +46,6 @@ architecture vhdl of	ACC_main is
 
 
 	signal	ledSetup				: LEDSetup_type;
-	signal	ledSetup_sw			: LEDSetup_type;
 	signal	ledSetup_hw			: LEDSetup_type;
 	signal	ledPreset			: ledPreset_type;
 	signal	clock					: 	clock_type;
@@ -53,23 +54,23 @@ architecture vhdl of	ACC_main is
 	signal	serialTx				:	serialTx_type;
 	signal	serialRx				:	serialRx_type;
 	signal	rxBuffer				:	rxBuffer_type;
-	signal	trig					:	trigSetup_type;
-   signal   localInfo_readReq : std_logic;
    signal   trig_out : std_logic_vector(7 downto 0);
-   signal   readChannel : natural range 0 to 15;
 	signal	acdcBoardDetect: std_logic_vector(7 downto 0);
 	signal	useExtRef: std_logic;
 	signal	pps: std_logic;
 	signal	hw_trig: std_logic;
 	signal	beamgate_trig: std_logic;
-	signal	testCmd	: 	testCmd_type;
 	signal 	led_trig	: std_logic_vector(8 downto 0);
 	signal 	led_mono	: std_logic_vector(8 downto 0);
 	
-	
-	
-	
-	
+    signal eth_clk : std_logic;
+    signal rx_addr : std_logic_vector (31 downto 0);
+    signal rx_data : std_logic_vector (63 downto 0);
+    signal rx_wren : std_logic;
+    signal tx_data : std_logic_vector (63 downto 0);
+    signal tx_rden : std_logic;
+    signal config  : config_type;
+    signal regs    : readback_reg_type;
 	
 begin
 
@@ -84,18 +85,18 @@ begin
 systemOut.out0 <= beamgate_trig;
 
 
-PPS_SELECT: process(SMA, systemIn, testCmd)
+PPS_SELECT: process(SMA, systemIn, config.testCmd)
 begin
-	case testCmd.pps_useSMA is
+	case config.testCmd.pps_useSMA is
 		when '1' => pps <= SMA(3); 
 		when '0' => pps <= systemIn.in0; 
 	end case;
 end process;
 
 
-BGT_SELECT: process(SMA, systemIn, testCmd)
+BGT_SELECT: process(SMA, systemIn, config.testCmd)
 begin
-	case testCmd.beamgateTrigger_useSMA is
+	case config.testCmd.beamgateTrigger_useSMA is
 		when '1' => beamgate_trig <= SMA(4); 
 		when '0' => beamgate_trig <= systemIn.in1;
 	end case;
@@ -113,9 +114,9 @@ end process;
 TRIG_MAP: trigger Port map(
 		clock		=> clock.sys,
 		reset		=> reset.global,
-		trig	 	=> trig,
+		trig	 	=> config.trig,
 		pps		=> pps,
-		hw_trig	=> SMA(6) xor trig.SMA_invert,
+		hw_trig	=> SMA(6) xor config.trig.SMA_invert,
 		beamGate_trig => beamgate_trig,
 		trig_out	=> trig_out
 		);
@@ -158,7 +159,7 @@ clockGen_map: ClockGenerator Port map(
 		useExtRef 		=> useExtRef
 );
 
-
+regs.pllLock <= clock.altpllLock;
 
 	
 		
@@ -186,26 +187,30 @@ end process;
 ------------------------------------
 --	COMMAND HANDLER
 ------------------------------------
-CMD_HANDLER_MAP: commandHandler port map (
-		reset						=> reset.global,
-		clock				      => clock.sys,      
-      din		      	   => usb.rxData_out,
-      din_valid				=> usb.rxData_valid,
-      localInfo_readReq    => localInfo_readReq,
-		rxBuffer_resetReq    => rxBuffer.resetReq,
-		rxBuffer_readReq    	=> rxBuffer.readReq,
-		globalResetReq       => reset.request,
-      trig		            => trig,
-      readChannel          => readChannel,
-		ledSetup					=> ledSetup_sw,
-		ledPreset				=> LEDPreset,
-		extCmd.enable     	=> serialTx.enable,    -- an 8 bit field that selects the board(s) to which the command will be sent
-		extCmd.data       	=> serialTx.cmd,
-		extCmd.valid         => serialTx.cmd_valid,
-		testCmd					=> testCmd
-	);
+CMD_HANDLER_MAP: commandHandler
+  port map (
+    reset         => reset.global,
+    clock         => clock,
+    eth_clk       => eth_clk,
+    rx_addr       => rx_addr,
+    rx_data       => rx_data,
+    rx_wren       => rx_wren,
+    tx_data       => tx_data,
+    tx_rden       => tx_rden,
+    config        => config,
+    extCmd.data   => serialTx.cmd,
+    extCmd.enable => serialTx.enable,
+    extCmd.valid  => serialTx.cmd_valid,
+    regs          => regs,
+    ledPreset     => ledPreset,
+    serialRX_data => rxBuffer.fifoDataOut,
+    serialRX_rden => rxBuffer.fifoReadEn
+    );
 
-  
+rxBuffer.resetReq <= config.rxBuffer_resetReq;
+reset.request <= config.globalResetReq;
+
+
 
   
   
@@ -213,29 +218,29 @@ CMD_HANDLER_MAP: commandHandler port map (
 --	DATA HANDLER
 ------------------------------------
 -- handles data frame transmission over usb
-DATA_HANDLER_MAP: dataHandler port map (
-		reset			=> reset.global,
-		clock			=> clock.sys,
-		serialRx		=> serialRx,
-		pllLock		=> clock.altPllLock,
-		trig			=> trig,
-		channel    	=> readChannel,		
-      ramReadEnable  => rxBuffer.ramReadEn,
-      ramAddress     => rxBuffer.ramAddress,
-      ramData        => rxBuffer.ramDataOut,
-      rxDataLen		=> rxBuffer.dataLen,
-		frame_received	=> rxBuffer.frame_received,
-      bufferReadoutDone => rxBuffer.ramReadDone,  -- byte wide, one bit for each channel
-		dout 		         => usb.txData_in,
-		txReq					=> usb.txReq,
-      txAck             => usb.txAck,
-      txLockReq         => usb.tx_busReq,
-      txLockAck         => usb.tx_busAck,
-      rxBuffer_readReq	=> rxBuffer.readReq,
-		localInfo_readRequest=> localInfo_readReq,    
-      acdcBoardDetect     	=> acdcBoardDetect,
-		useExtRef		=> useExtRef
-);
+--DATA_HANDLER_MAP: dataHandler port map (
+--		reset			=> reset.global,
+--		clock			=> clock.sys,
+--		serialRx		=> serialRx,
+--		pllLock		=> clock.altPllLock,
+--		trig			=> trig,
+--		channel    	=> readChannel,		
+--      ramReadEnable  => rxBuffer.ramReadEn,
+--      ramAddress     => rxBuffer.ramAddress,
+--      ramData        => rxBuffer.ramDataOut,
+--      rxDataLen		=> rxBuffer.dataLen,
+--		frame_received	=> rxBuffer.frame_received,
+--      bufferReadoutDone => rxBuffer.ramReadDone,  -- byte wide, one bit for each channel
+--		dout 		         => usb.txData_in,
+--		txReq					=> usb.txReq,
+--      txAck             => usb.txAck,
+--      txLockReq         => usb.tx_busReq,
+--      txLockAck         => usb.tx_busAck,
+--      rxBuffer_readReq	=> rxBuffer.readReq,
+--		localInfo_readRequest=> localInfo_readReq,    
+--      acdcBoardDetect     	=> acdcBoardDetect,
+--		useExtRef		=> useExtRef
+--);
 	
 
  
@@ -264,17 +269,16 @@ end process;
 ------------------------------------
 -- fifo & frame writer for commands to ACDC
 tx_buffer_gen	:	 for i in N-1 downto 0 generate
-	tx_buffer_map: serialTx_buffer port map (
-		clock				=> clock.sys,	 
-      din				=> serialTx.cmd,
-		din_txReq		=> serialTx.cmd_valid and serialTx.enable(i),
-		din_txAck		=> open,			-- no flow control on writing to tx buffer, but it is unlikely to overflow because there is a large fifo
-		dout				=> serialTx.byte(i),
-		dout_txReq		=> serialTx.byte_txReq(i),
-		dout_txAck		=> serialTx.byte_txAck(i)
-	);	
+  serialTx_buffer_map: serialTx_buffer
+    port map (
+      clock      => clock.sys,
+      eth_clk    => eth_clk,
+      din        => serialTx.cmd,
+      din_txReq  => serialTx.cmd_valid and serialTx.enable(i),
+      dout       => serialTx.byte(i),
+      dout_txReq => serialTx.byte_txReq(i),
+      dout_txAck => serialTx.byte_txAck(i));
 end generate;
-	
 	
 	
 	
@@ -318,6 +322,10 @@ rx_comms_gen	:	 for i in N-1 downto 0 generate
 		dout_valid				=> serialRx.valid(i)
 	);
 end generate;
+regs.serialRX_rx_clock_fail        <= serialRx.rx_clock_fail;
+regs.serialRX_symbol_align_error   <= serialRx.symbol_align_error;
+regs.serialRX_symbol_code_error    <= serialRx.symbol_code_error;
+regs.serialRX_disparity_error      <= serialRx.disparity_error;
      
 
 		
@@ -328,93 +336,116 @@ end generate;
 ------------------------------------
 -- stores a burst of received data in ram
 rxBuffer_gen	:	 for i in N-1 downto 0 generate
-	rxBuffer_map : serialRx_buffer
-	port map (
-		reset				=> rxBuffer.reset(i),-- need to get this signal from data handler
-		clock				=> clock.sys,	--system clock		 
-		din				=> serialRx.data(i), --data in, 16 bits
-		din_valid		=> serialRx.valid(i) and (not serialRx.kout(i)),	-- only valid data is received, not control codes	 
-		read_enable		=> rxBuffer.ramReadEn(i), 	--enable reading from RAM block
-		read_address	=> rxBuffer.ramAddress,--ram address
-		buffer_empty 	=> rxBuffer.empty(i),
-		frame_received	=> rxBuffer.frame_received(i),
-		dataLen		   => rxBuffer.dataLen(i), -- length of data stored in ram
-		dout				=> rxBuffer.ramDataOut(i)--data out
-		);	
-end generate;
+begin
+  rxBuffer_map: serialRx_buffer
+    port map (
+      reset        => rxBuffer.reset(i),
+      clock        => clock.sys,
+      eth_clk      => eth_clk,
+      din          => serialRx.data(i),
+      din_valid    => serialRx.valid(i) and (not serialRx.kout(i)),	-- only valid data is received, not control codes	 
+      read_enable  => rxBuffer.fifoReadEn(i),
+      buffer_empty => rxBuffer.empty(i),
+      dataLen      => rxBuffer.dataLen(i),
+      dout         => rxBuffer.fifoDataOut(i));
+end generate;                     
+regs.rxDataLen <= rxBuffer.dataLen;
 
 
 uart_rxBuffer_reset_gen: 
 process(reset.global, rxBuffer)
 begin
 	for i in N-1 downto 0 loop
-		rxBuffer.reset(i) <= reset.global or rxBuffer.resetReq(i) or rxBuffer.ramReadDone(i);
+		rxBuffer.reset(i) <= reset.global or rxBuffer.resetReq(i);
 	end loop;
 end process;
 	
 	
+------------------------------------
+--	Ethernet interface
+------------------------------------
+
+ethernet_adapter_inst: ethernet_adapter
+  port map (
+    clock    => clock,
+    reset    => reset.global,
+    ETH_in   => ETH_in,
+    ETH_out  => ETH_out,
+    ETH_mdc  => open,
+    ETH_mdio => open,
+    user_addr    => DIPswitch(7 downto 0),
+    eth_clk      => eth_clk,
+    rx_addr      => rx_addr,
+    rx_data      => rx_data,
+    rx_wren      => rx_wren,
+    tx_data      => tx_data,
+    tx_rden      => tx_rden,
+    b_data       => X"0000000000000000",
+    b_data_we    => '0',
+    b_data_force => '0',
+    b_enable     => open);
 	
 	
-------------------------------------
---	USB DRIVER 
-------------------------------------
-usbDriver_gen: usbDriver port map (
-	clock   					=> clock.sys,
-	rxData_in  	  	 		=> usb.rxData_in,
-	txData_out				=> usb.txData_out,
-   txBufferReady 			=> usb.txBufferReady,
-   rxDataAvailable	  	=> usb.rxDataAvailable, -- FLAG A      (note this flag is on usb clock)
-   busWriteEnable 		=> usb.busWriteEnable,     --when high the fpga outputs data onto the usb bus
-   PKTEND  					=> usb.PKTEND,	--usb packet end flag
-   SLWR		        		=> usb.SLWR,	--usb slave interface write signal
-   SLOE         			=> usb.SLOE,   	--usb slave interface bus output enable, active low
-   SLRD     	   		=> usb.SLRD,		--usb  slave interface bus read, active low
-   FIFOADR  	   		=> usb.FIFOADR, -- usb endpoint fifo select, essentially selects the tx fifo or rx fifo
-	tx_busReq  				=> usb.tx_busReq,  -- request to lock the bus in tx mode, preventing any interruptions from usb read
-	tx_busAck  				=> usb.tx_busAck,  
-   txData_in       		=> usb.txData_in,		
-   txReq		        		=> usb.txReq,
-   txAck		        		=> usb.txAck,		
-   rxData_out      		=> usb.rxData_out,
-	rxData_valid     		=> usb.rxData_valid,
-	test						=> usb.test
-);
-        
-        
-		  
--- signals from usb chip
-usb.txBufferReady <= usb_in.CTL(2); -- usb flag c meaning the usb chip is ready to accept tx data  (note this flag is on usb clock)  	
-usb.rxDataAvailable <= usb_in.CTL(0);
-
--- signals to usb chip
-usb_bus.PA(7) <= '0';		-- SLCS signal, the slave chip select (Permanently enabled)
-usb_bus.PA(6) <= usb.PKTEND;
-usb_out.RDY(1) <= usb.SLWR;     
-usb_out.RDY(0) <= usb.SLRD;
-usb_bus.PA(2) <= usb.SLOE;
-usb_bus.PA(5 downto 4) <= usb.FIFOADR;
-
-
-
-
-
-       
-         
-------------------------------------
---	USB BUS CONTROL
-------------------------------------
--- tristate control of the usb bus for reading and writing
-usb_io_buffer	: iobuf
-	port map(
-		datain	=>	usb.txData_out,	-- tx data to the usb chip bus
-		oe			=> usb.busWriteEnable_vec,	-- low = read from bus, high = write to bus
-		dataio	=> usb_bus.FD,	         -- the 16-bit wide bidirectional data bus of the Cypress chip
-		dataout	=> usb.rxData_in); -- data from the usb chip
-      
-usb_bus_oe: process(usb)
-begin
-	for i in 15 downto 0 loop usb.busWriteEnable_vec(i) <= usb.busWriteEnable; end loop;
-end process;
+--------------------------------------
+----	USB DRIVER 
+--------------------------------------
+--usbDriver_gen: usbDriver port map (
+--	clock   					=> clock.sys,
+--	rxData_in  	  	 		=> usb.rxData_in,
+--	txData_out				=> usb.txData_out,
+--   txBufferReady 			=> usb.txBufferReady,
+--   rxDataAvailable	  	=> usb.rxDataAvailable, -- FLAG A      (note this flag is on usb clock)
+--   busWriteEnable 		=> usb.busWriteEnable,     --when high the fpga outputs data onto the usb bus
+--   PKTEND  					=> usb.PKTEND,	--usb packet end flag
+--   SLWR		        		=> usb.SLWR,	--usb slave interface write signal
+--   SLOE         			=> usb.SLOE,   	--usb slave interface bus output enable, active low
+--   SLRD     	   		=> usb.SLRD,		--usb  slave interface bus read, active low
+--   FIFOADR  	   		=> usb.FIFOADR, -- usb endpoint fifo select, essentially selects the tx fifo or rx fifo
+--	tx_busReq  				=> usb.tx_busReq,  -- request to lock the bus in tx mode, preventing any interruptions from usb read
+--	tx_busAck  				=> usb.tx_busAck,  
+--   txData_in       		=> usb.txData_in,		
+--   txReq		        		=> usb.txReq,
+--   txAck		        		=> usb.txAck,		
+--   rxData_out      		=> usb.rxData_out,
+--	rxData_valid     		=> usb.rxData_valid,
+--	test						=> usb.test
+--);
+--        
+--        
+--		  
+---- signals from usb chip
+--usb.txBufferReady <= usb_in.CTL(2); -- usb flag c meaning the usb chip is ready to accept tx data  (note this flag is on usb clock)  	
+--usb.rxDataAvailable <= usb_in.CTL(0);
+--
+---- signals to usb chip
+--usb_bus.PA(7) <= '0';		-- SLCS signal, the slave chip select (Permanently enabled)
+--usb_bus.PA(6) <= usb.PKTEND;
+--usb_out.RDY(1) <= usb.SLWR;     
+--usb_out.RDY(0) <= usb.SLRD;
+--usb_bus.PA(2) <= usb.SLOE;
+--usb_bus.PA(5 downto 4) <= usb.FIFOADR;
+--
+--
+--
+--
+--
+--       
+--         
+--------------------------------------
+----	USB BUS CONTROL
+--------------------------------------
+---- tristate control of the usb bus for reading and writing
+--usb_io_buffer	: iobuf
+--	port map(
+--		datain	=>	usb.txData_out,	-- tx data to the usb chip bus
+--		oe			=> usb.busWriteEnable_vec,	-- low = read from bus, high = write to bus
+--		dataio	=> usb_bus.FD,	         -- the 16-bit wide bidirectional data bus of the Cypress chip
+--		dataout	=> usb.rxData_in); -- data from the usb chip
+--      
+--usb_bus_oe: process(usb)
+--begin
+--	for i in 15 downto 0 loop usb.busWriteEnable_vec(i) <= usb.busWriteEnable; end loop;
+--end process;
 
          
       
@@ -474,13 +505,13 @@ begin
 			when x"42" => sig := useExtRef;
 			when x"43" => sig := reset.request2;
 			when x"44" => sig := '0';
-			when x"45" => sig := localInfo_readReq;
+--			when x"45" => sig := localInfo_readReq;
 			when x"46" => sig := rxBuffer.reset(ch);
 			when x"47" => sig := acdcBoardDetect(ch);
 			when x"48" => sig := rxBuffer.readReq;			
 -- trig
 			when x"50" => sig := trig_out(ch);
-			when x"51" => sig := trig.sw;			
+			when x"51" => sig := config.trig.sw;			
 -- input
 			when x"60" => sig := pps;
 			when x"61" => sig := SMA(ch);
@@ -534,18 +565,18 @@ ledPreset(11) <= (x"0000", x"0000", x"0000");	--	all off
 
 
 
-LED_PRESET_CTRL: process(DIPswitch, ledSetup_sw, ledSetup_hw)
+LED_PRESET_CTRL: process(DIPswitch, config.ledSetup, ledSetup_hw)
 begin
 	if (DIPswitch(9) = '0') then		-- dip switch 1 (left) is ON = use dipswitch to choose led preset signal mappings
 		ledSetup <= ledSetup_hw;	-- use hardware setting from dip switch
 	else
-		ledSetup <= ledSetup_sw;	-- use software setting from command handler
+		ledSetup <= config.ledSetup;	-- use software setting from command handler
 	end if;
 end process;
 
 
 
-ledSetup_hw <= ledPreset(to_integer(unsigned(not DIPswitch(3 downto 0))));		-- dip switch 7 to 10 (right)  = bit [3:0] of led preset select
+ledSetup_hw <= ledPreset(0); --to_integer(unsigned(not DIPswitch(3 downto 0))));		-- dip switch 7 to 10 (right)  = bit [3:0] of led preset select
  
 
  

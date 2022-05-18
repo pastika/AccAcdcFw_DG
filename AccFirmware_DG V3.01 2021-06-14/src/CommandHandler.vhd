@@ -16,313 +16,296 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.numeric_std.ALL;
 use work.defs.all;
-
+use work.components.all;
+use work.LibDG.all;
 
 
 entity commandHandler is
-	port (
-		reset						: 	in   	std_logic;
-		clock				      : 	in		std_logic;        
-      din		      	   :  in    std_logic_vector(31 downto 0);
-      din_valid				:  in    std_logic;
-		localInfo_readReq    :  out   std_logic;
-		rxBuffer_resetReq    :  out   std_logic_vector(7 downto 0);
-		rxBuffer_readReq		:	out	std_logic;
-		globalResetReq       :  out   std_logic;
-      trig		            :	out	trigSetup_type;
-      readChannel          :	out	natural range 0 to 15;
-		ledSetup					: 	out	LEDSetup_type;
-		ledPreset				: 	in		LEDPreset_type;
-		extCmd			      : 	out 	extCmd_type;
-		testCmd					: 	out	testCmd_type
-);
+  port (
+    -- contorl signals
+    reset						: 	in   	std_logic;
+    clock				      : 	in		clock_type;
+
+    -- ethernet adapter io signals
+    eth_clk                 : in    std_logic;
+    rx_addr              	: in    std_logic_vector (31 downto 0);
+    rx_data              	: in    std_logic_vector (63 downto 0);
+    rx_wren              	: in    std_logic;
+    tx_data              	: out   std_logic_vector (63 downto 0);
+    tx_rden              	: in    std_logic;
+
+    -- registers
+    config            : out config_type;
+
+    regs              : in readback_reg_type;
+
+    
+    ledPreset		: 	in		LEDPreset_type;
+
+    -- ACDC commands
+    extCmd            : out extCmd_type;
+
+    -- slow serial interface
+    serialRX_data     : in  Array_16bit;
+    serialRX_rden     : out std_logic_vector(N-1 downto 0)
+    
+    );
 end commandHandler;
 
 
 architecture vhdl of commandHandler is
 
+  signal config_z            : config_type;
 
+  signal regs_z              : readback_reg_type;
 
-   
+  signal nreset           : std_logic;
+  signal nreset_eth_sync0 : std_logic;
+  signal nreset_eth_sync1 : std_logic;
+  signal nreset_eth_sync2 : std_logic;
 
-	
-	begin	
-	
+begin
 
-   
-   
-   
 -- note
 -- the signals generated in this process either stay set until a new command arrives to change them,
 -- or they will last for one clock cycle and then reset
 --
---
---
--- Command types 0 to 9 are for the acc 
--- On receiving these commands, a command may also be sent to the acdc,
--- depeding on the task required of the recived command.
--- This forwarded command will be of type A to F (hex) for the acdc
---
--- Command types A to F are for the acdc
--- On receiving these commands, the acc will do nothing except forward them to the acdc
---
---
+  nreset <= not reset;
+  reset_eth_sync : process(eth_clk, clock.altpllLock)
+  begin
+    if nreset = '0' or clock.altpllLock = '0' then
+      nreset_eth_sync0 <= '0';
+      nreset_eth_sync1 <= '0';
+      nreset_eth_sync2 <= '0';
+    else
+      if rising_edge(eth_clk) then
+        nreset_eth_sync0 <= nreset;
+        nreset_eth_sync1 <= nreset_eth_sync0;
+        nreset_eth_sync2 <= nreset_eth_sync1;
+      end if;
+    end if;
+  end process;
+  
+  commandSync_inst: commandSync
+    port map (
+      reset      => reset,
+      clock      => clock,
+      eth_clk    => eth_clk,
+      eth_reset  => nreset_eth_sync2,
+      config_z   => config_z,
+      config     => config,
+      reg        => regs,
+      reg_z      => regs_z);
+  
+  COMMAND_HANDLER:	process(eth_clk)
+  begin
+	if (rising_edge(eth_clk)) then
 
-   
-COMMAND_HANDLER:	process(clock)
-variable acdcBoardMask: 	std_logic_vector(7 downto 0);
-variable cmdType: 		std_logic_vector(3 downto 0);
-variable cmdOption: 		std_logic_vector(3 downto 0);
-variable cmdValue: 		std_logic_vector(15 downto 0);
-variable acdc_cmd: 		std_logic_vector(31 downto 0);	
-variable m: 		natural;	
-variable init: std_logic:= '1';		-- a flag used to set initial values for signals whose value will not go back to default on global reset
-variable x: natural range 0 to 31;	
-variable opt: natural range 0 to 15;
-begin
-	if (rising_edge(clock)) then
-	
-		if (init = '1') then
-		
-			init := '0';
-			testCmd.pps_useSMA	<= '0';				-- pps will be taken from SMA connector, not LVDS
-			testCmd.beamgateTrigger_useSMA <= '0';	-- beamgate trigger will be taken from SMA connector, not LVDS
-			ledSetup <= ledPreset(0);		-- only occurs at power-up
-			
-		end if;
-		
-		
-		if (reset = '1' or din_valid = '0') then
-			
-			
-			if (reset = '1') then
-         
-			-----------------------------------
-			-- POWER-ON DEFAULT VALUES
-			-----------------------------------
+      if (nreset_eth_sync2 = '0' or rx_wren = '0') then
 
-				for j in 0 to N-1 loop 
-					trig.source(j) <= 0;
-				end loop;
-			
-			
-			-----------------------------------
-			
-				trig.SMA_invert <= '0';
-				trig.windowStart <= 16000; 	-- 400us
-				trig.windowLen <= 2000;		-- 50us
-				trig.ppsDivRatio <= 1;
-				trig.ppsMux_enable <= '1';
-				testCmd.channel <= 1;
-				
-				
-			end if;
-			
-			
-			-----------------------------------
-			-- clear the single-pulse signals
-			-----------------------------------
-			
-			globalResetReq <= '0';
-			rxBuffer_resetReq <= x"00";
-			trig.sw <= '0';
-			localInfo_readReq <= '0';
-			rxBuffer_readReq <= '0';
-			extCmd.valid <= '0';
-     
-			
-	  
-	  
+        if (nreset_eth_sync2 = '0') then
+
+          -----------------------------------
+          -- POWER-ON DEFAULT VALUES
+          -----------------------------------
+
+          for j in 0 to N-1 loop
+            config_z.trig.source(j) <= 0;
+          end loop;
+
+          -----------------------------------
+
+          config_z.trig.SMA_invert <= '0';
+          config_z.trig.windowStart <= 16000; 	-- 400us
+          config_z.trig.windowLen <= 2000;		-- 50us
+          config_z.trig.ppsDivRatio <= 1;
+          config_z.trig.ppsMux_enable <= '1';
+          config_z.testCmd.channel <= 1;
+
+        end if;
+
+        -----------------------------------
+        -- clear the single-pulse signals
+        -----------------------------------
+
+        config_z.globalResetReq <= '0';
+        config_z.rxBuffer_resetReq <= x"00";
+        config_z.trig.sw <= '0';
+        extCmd.valid <= '0';
+
       else     -- new instruction received
-         		
-					
-		
-			acdc_cmd := x"00000000";		-- initially, no command to acdc
-		
-		
-			
-			--parse 32 bit instruction word:
-			acdcBoardMask		:= din(31 downto 24);
-			cmdType				:= din(23 downto 20);
-			cmdOption			:= din(19 downto 16);
-			cmdValue				:= din(15 downto 0);
-         opt := to_integer(unsigned(cmdOption));
-			
-			
-			
-         case cmdType is                
 
-				
-				
-				-- 0 to 9 are for acc			
-				
-				
-				when x"0" =>	-- reset requests
+        case rx_addr is
 
-					case cmdOption is
-						when x"0" => globalResetReq <= '1';
-						when x"2" => rxBuffer_resetReq <= din(7 downto 0);
-						when others => null;
-					end case;	
+          -- reset signals 
+          when x"00000000" =>  config_z.globalResetReq    <= rx_data(0);
+          --when x"00000001" =>  config_z.rxFIFO_resetReq   <= rx_data(N-1 downto 0);
+          when x"00000002" =>  config_z.rxBuffer_resetReq <= rx_data(N-1 downto 0);
 
-					
-					
-				when x"1" =>	-- generate software trigger
-					
-					trig.sw <= '1'; 			 
-					
+          -- generate software trigger
+          when x"00000010" =>  config_z.trig.sw <= '1';
 
-										
-				when x"2" =>   -- read data 
-					
-					case cmdOption is												
-						
-						when x"0" => 		-- request to read short (32 word) info frame
-							localInfo_readReq <= '1';   
-						
-						when x"1" => 		-- request to read uart rx data buffer of the specified channel
-							rxBuffer_readReq <= '1'; 
-							readChannel <= to_integer(unsigned(cmdValue(3 downto 0))); 
-												
-						when others => null;
-						
-					end case;
-                
-					 
-					 
-				when x"3" => 	-- trigger setup
-					
-					
-					-- acc trigger modes (these are local- different to system trigger modes set by software)
-					--
-					-- 0 = off (trigger not supplied by ACC)
-					-- 1 = software
-					-- 2 = hardware
-					-- 3 = pps
-					-- 4 = beam gate / pps multiplexed
-					
-					
-					case cmdOption is
-						
-						when x"0" => 		-- set trigger mode for the specified acdc boards (bits 11:4)
-						
-							for i in 0 to 7 loop
-								if (din(i + 4) = '1') then		-- acdc board mask bit
-									case din(3 downto 0) is
-										when x"0" => trig.source(i) <= 0; -- mode 0 = trigger off
-										when x"1" => trig.source(i) <= 1; -- mode 1 = software trigger
-										when x"2" => trig.source(i) <= 2; -- mode 2 = acc sma trigger
-										when x"3" => trig.source(i) <= 0; -- mode 3 = acdc sma trigger
-										when x"4" => trig.source(i) <= 0; -- mode 4 = self-trigger
-										when x"5" => trig.source(i) <= 4; -- mode 5 = self-trigger with acc sma validation
-										when x"6" => trig.source(i) <= 0; -- mode 6 = self-trigger with acdc sma validation
-										when x"7" => trig.source(i) <= 2; -- mode 7 = acc sma trigger with acdc sma validation
-										when x"8" => trig.source(i) <= 4; -- mode 8 = acdc sma trigger with acc sma validation
-										when x"9" => trig.source(i) <= 3; -- mode 9 = pps trigger 
-										when others =>	trig.source(i) <= 0;
-									end case;
-								end if;
-							end loop;
-							
-						
-						
-						when x"1" => trig.SMA_invert <= din(0);
-						when x"2" => trig.windowStart <= to_integer(unsigned(din(15 downto 0)));
-						when x"3" => trig.windowLen <= to_integer(unsigned(din(15 downto 0)));
-						when x"4" => trig.ppsDivRatio <= to_integer(unsigned(din(15 downto 0)));
-						when x"5" => trig.ppsMux_enable <= din(0);
-						
-						
-						when others => null;
-					
-					
-					end case;	
-					
-					
-					
-				
-				when x"4" =>	-- led control			
-					
-					-- set all leds
-					if (cmdOption = x"F") then ledSetup <= ledPreset(to_integer(unsigned(din(3 downto 0))));
-					
-					-- set one led 
-					else ledSetup(opt) <= din(15 downto 0); end if;					
-					
-					
-				
-					
-				when x"9" =>	-- test command
-					
-					case cmdOption is
-						
-						when x"0" => testCmd.pps_useSMA	<= din(0);				-- pps will be taken from SMA connector, not LVDS
-						when x"1" => testCmd.beamgateTrigger_useSMA <= din(0);	-- beamgate trigger will be taken from SMA connector, not LVDS
-						when x"2" => testCmd.channel <= to_integer(unsigned(din(2 downto 0)));
-						when others => null;
-						
-					end case;
-					
-					
-					
-					
-				-- A to F are for acdc			
-				
-				
-				-- acdc commands - forward the received command directly to the acdc unaltered
-            when x"A" => 	acdc_cmd := din;
-            when x"B" => 	acdc_cmd := din;
-            when x"C" => 	acdc_cmd := din;
-            when x"D" => 	acdc_cmd := din;
-            when x"E" => 	acdc_cmd := din;
-            when x"F" => 	acdc_cmd := din;
-						               
+          -- read data
+          --when x"00000020" =>  config_z.localInfo_readReq <= '1';
+          --when x"00000021" =>
+          --  config_z.rxBuffer_readReq <= '1';
+          --  config_z.readChannel <= to_integer(unsigned(rx_data(3 downto 0)));
+          --when x"00000022" =>
+          --  config_z.dataFIFO_readReq <= '1';
+          --  config_z.readChannel <= to_integer(unsigned(rx_data(3 downto 0)));
 
-								
-				
-				when others => null;
-				
-				
-		
-		
-			
-			end case;
-                   
-						 
-         
-         if (acdc_cmd /= x"00000000") then 		-- if non-zero acdc command, send it 
-         
-            extCmd.data <= acdc_cmd;		
-            extCmd.valid <= '1';		
-				extCmd.enable <= acdcBoardMask;
-						
-         end if;      
-             
-				 
-				 
-				 
-		end if;
-	end if;
-end process;
+          -- trigger setup
+          -- set trigger mode for the specified acdc boards
+          -- mode 0 = trigger off
+          -- mode 1 = software trigger
+          -- mode 2 = acc sma trigger
+          when x"00000030" =>  config_z.trig.source(0) <= to_integer(unsigned(rx_data(3 downto 0)));
+          when x"00000031" =>  config_z.trig.source(1) <= to_integer(unsigned(rx_data(3 downto 0)));
+          when x"00000032" =>  config_z.trig.source(2) <= to_integer(unsigned(rx_data(3 downto 0)));
+          when x"00000033" =>  config_z.trig.source(3) <= to_integer(unsigned(rx_data(3 downto 0)));
+          when x"00000034" =>  config_z.trig.source(4) <= to_integer(unsigned(rx_data(3 downto 0)));
+          when x"00000035" =>  config_z.trig.source(5) <= to_integer(unsigned(rx_data(3 downto 0)));
+          when x"00000036" =>  config_z.trig.source(6) <= to_integer(unsigned(rx_data(3 downto 0)));
+          when x"00000037" =>  config_z.trig.source(7) <= to_integer(unsigned(rx_data(3 downto 0)));
+
+          when x"00000038" =>  config_z.trig.SMA_invert    <= rx_data(0);
+          when x"0000003a" =>  config_z.trig.windowStart   <= to_integer(unsigned(rx_data(15 downto 0)));
+          when x"0000003b" =>  config_z.trig.windowLen     <= to_integer(unsigned(rx_data(15 downto 0)));
+          when x"0000003c" =>  config_z.trig.ppsDivRatio   <= to_integer(unsigned(rx_data(15 downto 0)));
+          when x"0000003d" =>  config_z.trig.ppsMux_enable <= rx_data(0);
+
+          -- LED settings
+          when x"00000040" =>  config_z.ledSetup(0) <= rx_data(15 downto 0);
+          when x"00000041" =>  config_z.ledSetup(1) <= rx_data(15 downto 0);
+          when x"00000042" =>  config_z.ledSetup(2) <= rx_data(15 downto 0);
+          when x"0000004f" =>  config_z.ledSetup <= ledPreset(to_integer(unsigned(rx_data(3 downto 0))));
+
+          -- serialRx high speed controls
+          --when x"00000050" => config_z.delayCommandSet <= '1';
+          --when x"00000051" => config_z.delayCommand <= rx_data(11 downto 0);
+          --when x"00000052" => config_z.delayCommandMask <= rx_data(2*N-1 downto 0);
+          --when x"00000053" => config_z.count_reset <= '1';
+          --when x"00000054" => config_z.updn <= rx_data(0);
+          --when x"00000055" => config_z.cntsel <= rx_data(4 downto 0);
+          --when x"00000056" => config_z.phaseUpdate <= '1';
+          --when x"00000057" => config_z.backpressure_threshold <= rx_data(11 downto 0);
+
+          -- manchester link controls
+          --when x"00000060" => config_z.train_manchester_links <= '1';
+
+          -- test commands 
+          when x"00000090" =>  config_z.testCmd.pps_useSMA	<= rx_data(0);				-- pps will be taken from SMA connector, not LVDS
+          when x"00000091" =>  config_z.testCmd.beamgateTrigger_useSMA <= rx_data(0);	-- beamgate trigger will be taken from SMA connector, not LVDS
+          when x"00000092" =>  config_z.testCmd.channel <= to_integer(unsigned(rx_data(2 downto 0)));
+
+          -- acdc commands - forward the received command directly to the acdc unaltered
+          when x"00000100" =>
+            extCmd.data   <= rx_data(31 downto 0);
+            extCmd.valid  <= '1';
+            extCmd.enable <= rx_data(31 downto 24);
+
+          when others => null;
+
+        end case;
+
+      end if;
+
+    end if;
+  end process;
 
 
+  -- read back mux
+  readback_mux : process(all)
+  begin
+    tx_data <= X"0000000000000000";
+    serialRX_rden <= X"00";
+    
+    if unsigned(rx_addr) < X"00001100" then
+      case rx_addr is
 
+        -- trigger setup
+        -- set trigger mode for the specified acdc boards
+        -- mode 0 = trigger off
+        -- mode 1 = software trigger
+        -- mode 2 = acc sma trigger
+        when x"00000030" =>  tx_data(3 downto 0) <= std_logic_vector(to_unsigned(config_z.trig.source(0), 4));
+        when x"00000031" =>  tx_data(3 downto 0) <= std_logic_vector(to_unsigned(config_z.trig.source(1), 4));
+        when x"00000032" =>  tx_data(3 downto 0) <= std_logic_vector(to_unsigned(config_z.trig.source(2), 4));
+        when x"00000033" =>  tx_data(3 downto 0) <= std_logic_vector(to_unsigned(config_z.trig.source(3), 4));
+        when x"00000034" =>  tx_data(3 downto 0) <= std_logic_vector(to_unsigned(config_z.trig.source(4), 4));
+        when x"00000035" =>  tx_data(3 downto 0) <= std_logic_vector(to_unsigned(config_z.trig.source(5), 4));
+        when x"00000036" =>  tx_data(3 downto 0) <= std_logic_vector(to_unsigned(config_z.trig.source(6), 4));
+        when x"00000037" =>  tx_data(3 downto 0) <= std_logic_vector(to_unsigned(config_z.trig.source(7), 4));
 
+        when x"00000038" =>  tx_data(0) <= config_z.trig.SMA_invert;
+        when x"0000003a" =>  tx_data(15 downto 0) <= std_logic_vector(to_unsigned(config_z.trig.windowStart, 16));
+        when x"0000003b" =>  tx_data(15 downto 0) <= std_logic_vector(to_unsigned(config_z.trig.windowLen, 16));
 
+        -- serialRx high speed controls
+        --when x"00000051" => tx_data(11 downto 0) <= config_z.delayCommand;
+        --when x"00000052" => tx_data(2*N-1 downto 0) <= config_z.delayCommandMask;
+        --when x"00000054" => tx_data(0) <= config_z.updn;
+        --when x"00000055" => tx_data(4 downto 0) <= config_z.cntsel;
+        --when x"00000057" => tx_data(11 downto 0) <= config_z.backpressure_threshold;
 
+        -- read only registers 
+        when x"00001000" => tx_data(15 downto 0) <= firwareVersion.number;
+        when x"00001001" => tx_data(31 downto 0) <= firwareVersion.year & firwareVersion.MMDD;
+        when x"00001002" => tx_data(0)            <= regs_z.pllLock;
 
+        when x"00001010" => tx_data(N-1 downto 0) <= regs_z.serialRX_rx_clock_fail;
+        when x"00001011" => tx_data(N-1 downto 0) <= regs_z.serialRX_symbol_align_error;
+        when x"00001012" => tx_data(N-1 downto 0) <= regs_z.serialRX_symbol_code_error;
+        when x"00001013" => tx_data(N-1 downto 0) <= regs_z.serialRX_disparity_error;
+                          
+                            
+        when others => null;
 
+      end case;
 
+--    elsif unsigned(rx_addr) < X"00001110" then
+--      tx_data(15 downto 0) <= regs_z.byte_fifo_occ(to_integer(unsigned(rx_addr(3 downto 0))));
 
+--    elsif unsigned(rx_addr) < X"00001120" then
+--      tx_data(15 downto 0) <= regs_z.prbs_error_counts(to_integer(unsigned(rx_addr(3 downto 0))));
 
+--    elsif unsigned(rx_addr) < X"00001130" then
+--      tx_data(15 downto 0) <= regs_z.symbol_error_counts(to_integer(unsigned(rx_addr(3 downto 0))));
 
+--    elsif unsigned(rx_addr) < X"00001138" then
+--      tx_data(15 downto 0) <= regs_z.data_occ(to_integer(unsigned(rx_addr(2 downto 0))));
 
+    elsif unsigned(rx_addr) < X"00001140" then
+      tx_data(15 downto 0) <= regs_z.rxDataLen(to_integer(unsigned(rx_addr(2 downto 0))));
 
-
-
-
-
-
-
-			
+    -- 0x00001200 block reserved for slow serial RX FIFO readout
+    elsif unsigned(rx_addr) = X"00001200" then
+      tx_data(15 downto 0) <= serialRX_data(0);
+      serialRX_rden(0) <= tx_rden;
+    elsif unsigned(rx_addr) = X"00001201" then
+      tx_data(15 downto 0) <= serialRX_data(1);
+      serialRX_rden(1) <= tx_rden;
+    elsif unsigned(rx_addr) = X"00001202" then
+      tx_data(15 downto 0) <= serialRX_data(2);
+      serialRX_rden(2) <= tx_rden;
+    elsif unsigned(rx_addr) = X"00001203" then
+      tx_data(15 downto 0) <= serialRX_data(3);
+      serialRX_rden(3) <= tx_rden;
+    elsif unsigned(rx_addr) = X"00001204" then
+      tx_data(15 downto 0) <= serialRX_data(4);
+      serialRX_rden(4) <= tx_rden;
+    elsif unsigned(rx_addr) = X"00001205" then
+      tx_data(15 downto 0) <= serialRX_data(5);
+      serialRX_rden(5) <= tx_rden;
+    elsif unsigned(rx_addr) = X"00001206" then
+      tx_data(15 downto 0) <= serialRX_data(6);
+      serialRX_rden(6) <= tx_rden;
+    elsif unsigned(rx_addr) = X"00001207" then
+      tx_data(15 downto 0) <= serialRX_data(7);
+      serialRX_rden(7) <= tx_rden;
+    
+    end if;
+  end process;
+  
+  
 end vhdl;
